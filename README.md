@@ -90,7 +90,7 @@ z' = a \times Log(1 + z^b)
 ### Loading into Unity Editor
  - Copy the source files into any folder, then **add Unity-StarterSamples v71.0.0 [[URL](https://github.com/oculus-samples/Unity-StarterSamples/releases/tag/v71.0.0)] into the `Assets` folder** (so that a folder named Unity-StarterSamples-71.0.0 and its contents are inside `Assets`).
  - In Unity Hub, use "Add project from disk" and select the folder where you placed the files.
-From `Assets > Scenes`, drag Sample Scene into the Hierarchy window. Remove any automatically added Scenes from Unity.
+From `Assets > Scenes`, drag `Sample Scene` into the Hierarchy window. Remove any automatically added Scenes from Unity.
  - The application can run within the Unity Editor as well (you need to connect the headset to Meta Quest Link before running).
 
 ### Q&A
