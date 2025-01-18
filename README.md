@@ -29,7 +29,9 @@
 - 左スティック: 画像の位置を前後又は左右に動かします。
 - 左トリガー + コントローラー：画像の位置を動かします。マウスのドラッグのように使用します。
 - X / Y ボタン: 画像の奥行きを調整します。奥行きが Log モードの時のみ作用します（Log モードで使用する下の数式の b を増減します。）。
-   $$ z' = a \times Log(1 + z^b)$$
+```math
+z' = a \times Log(1 + z^b)
+```
 - 右スティック: 左右で画像を拡大・縮小します。
 - 右トリガー + コントローラー: 前後で画像の奥行きを調整します（上の数式の a を増減します。）。
 - A ボタン：奥行きを Log モードにします。
@@ -77,7 +79,9 @@ A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-p
  - Left Joystick: Moves the image forward/back or left/right.
  - Left Trigger + Controller: Moves the image, functioning like dragging with a mouse.
  - X / Y Buttons: Adjust the depth of the image. These only work in Log mode (they increase or decrease parameter b in the formula below):
-   $$ z' = a \times Log(1 + z^b)$$
+```math
+z' = a \times Log(1 + z^b)
+```
  - Right Joystick: Moves left or right to zoom the image in or out.
  - Right Trigger + Controller: Moves the image’s depth forward or backward (adjusts the parameter a in the formula above).
  - A Button: Switches the depth mode to Log.
