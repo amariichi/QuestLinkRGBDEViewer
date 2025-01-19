@@ -21,10 +21,8 @@ public class FileLoader : MonoBehaviour
     // IsReadyToLoadの内部フィールド
     [SerializeField]
     private bool _isReadyToLoad = true;
-
     /// <summary>
-    /// 他のスクリプトから参照可能なOriginalWidthプロパティ（読み取り専用）。
-    /// Width after separated, 分割後のleftImage.pngの幅を示します。
+    /// 他のスクリプトから参照可能な読み込み可能プロパティ（読み取り専用）。
     /// </summary>
     public bool IsReadyToLoad
     {
