@@ -13,7 +13,7 @@
 ### 設定方法及び使用方法の概要
 1. Depth Pro を公式ページに記載の方法でインストール。
 2. 1.で Depth Pro をインストールしたフォルダに、`depth-pro_rgbde.py` をコピーするとともに `input` フォルダを作成。
-3. Quest 2 などで立体視したい画像(jpg又はpng)を `input` フォルダに入れる。
+3. Quest 2 などで立体視したい画像（jpg又はpng）を `input` フォルダに入れる。
 4. ターミナル上で `python depth-pro_rgbde.py` と入力してスクリプトを実行。`output` フォルダに左半分が元画像で右半分がほぼ透明[^1] の PNG ファイルが生成されます。
 5. 上記のリンクからダウンロードしたアプリの実行ファイルを任意のフォルダに解凍。
 6. Meta Quest Link [[URL](https://www.meta.com/ja-jp/help/quest/pcvr/)] でヘッドセットを PC に接続。
