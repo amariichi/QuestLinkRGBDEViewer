@@ -13,7 +13,7 @@
 ### 設定方法及び使用方法の概要
 1. Depth Pro を公式ページに記載の方法でインストール。
 2. 1.で Depth Pro をインストールしたフォルダに、`depth-pro_rgbde.py` をコピーするとともに `input` フォルダを作成。
-3. Quest 2 などで立体視したい画像を `input` フォルダに入れる。
+3. Quest 2 などで立体視したい画像(jpg又はpng)を `input` フォルダに入れる。
 4. ターミナル上で `python depth-pro_rgbde.py` と入力してスクリプトを実行。`output` フォルダに左半分が元画像で右半分がほぼ透明[^1] の PNG ファイルが生成されます。
 5. 上記のリンクからダウンロードしたアプリの実行ファイルを任意のフォルダに解凍。
 6. Meta Quest Link [[URL](https://www.meta.com/ja-jp/help/quest/pcvr/)] でヘッドセットを PC に接続。
@@ -63,7 +63,7 @@ A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-p
 ### Outline of Setup and Usage
 1. Install Depth Pro following the instructions on the official page.
 2. Copy `depth-pro_rgbde.py` to the folder where Depth Pro was installed, and create an `input` folder there as well.
-3. Place the images you want to view in stereoscopic 3D (e.g., on Quest 2) into the `input` folder.
+3. Place the images (jpg or png) you want to view in stereoscopic 3D (e.g., on Quest 2) into the `input` folder.
 4. Run the script by typing `python depth-pro_rgbde.py` in the terminal. A PNG file whose left half is the original image and whose right half is almost transparent[^3] will be generated in the `output` folder.
 5. Unzip the downloaded application executable (from the link above) into any folder of your choice.
 6. Connect your headset (such as Meta Quest 2) to your PC via Meta Quest Link [[URL](https://www.meta.com/ja-jp/help/quest/pcvr/)].
