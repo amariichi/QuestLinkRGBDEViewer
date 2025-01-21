@@ -46,7 +46,7 @@ public class FileLoader : MonoBehaviour
 
     /// <summary>
     /// 他のスクリプトから参照可能なOriginalWidthプロパティ（読み取り専用）。
-    /// Width after separated, 分割後のleftImage.pngの幅を示します。
+    /// Width after separated, 分割後のleftImageの幅を示します（元画像の半分の幅）。
     /// </summary>
     public int OriginalWidth
     {
@@ -59,7 +59,7 @@ public class FileLoader : MonoBehaviour
 
     /// <summary>
     /// 他のスクリプトから参照可能なOriginalHeightプロパティ（読み取り専用）。
-    /// Height after separeted, 分割後のleftImage.pngの高さを示します。
+    /// Height after separeted, 分割後のleftImageの高さを示します（元画像と同じ高さ）。
     /// </summary>
     public int OriginalHeight
     {
