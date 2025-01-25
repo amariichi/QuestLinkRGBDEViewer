@@ -11,7 +11,7 @@ import argparse
 DEFAULT_FOLDER_PATH = './input'
 ALLOWED_EXTENSIONS = ('.jpg', '.png')
 
-def generate_depth_map(input_path, output_path):
+def generate_depth_map(input_path, output_path, string):
     # Use GPU, if possible, GPUが利用可能な場合はGPUを使用
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
@@ -56,15 +56,20 @@ def generate_depth_map(input_path, output_path):
 
         # Save depth information as an image on the right side, デプスマップを右側に画像として保存
         depth_image = cv2.hconcat([cv2.cvtColor(cv2.imread(file_path), cv2.COLOR_BGR2BGRA), cv2.cvtColor(byte_arrays, cv2.COLOR_RGBA2BGRA)])
-        cv2.imwrite(os.path.join(output_path, os.path.splitext(file)[0] + "_RGBDE.png"), depth_image, [int(cv2.IMWRITE_PNG_COMPRESSION), 9])
+        cv2.imwrite(os.path.join(output_path, os.path.splitext(file)[0] + "_RGBDE" + string + ".png"), depth_image, [int(cv2.IMWRITE_PNG_COMPRESSION), 9])
         print(f"Depth map of {file} is saved to {output_path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='add depth information to all JPG or PNG images in the input folder and write them to the "output" folder')
+    parser.add_argument('--sphere', action='store_true',
+                        help='add ".360" to output filenames')
     parser.add_argument('--folder', type=str, default=DEFAULT_FOLDER_PATH,
                         help='specify the folder to process(default: %(default)s)')
-
     args = parser.parse_args()
     input_image_path = args.folder  # Set imput image folder path, 入力画像のパスを指定
     output_image_path = "./output"  # Set output image folder path,出力画像のパスを指定
-    generate_depth_map(input_image_path, output_image_path)
+    if  args.sphere:
+        string = ".360"
+    else:
+        string = ""
+    generate_depth_map(input_image_path, output_image_path, string)

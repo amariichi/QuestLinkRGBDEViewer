@@ -21,8 +21,10 @@ public class FileLoader : MonoBehaviour
     // IsReadyToLoadの内部フィールド
     [SerializeField]
     private bool _isReadyToLoad = true;
+
     /// <summary>
-    /// 他のスクリプトから参照可能な読み込み可能プロパティ（読み取り専用）。
+    /// 他のスクリプトから参照可能なOriginalWidthプロパティ（読み取り専用）。
+    /// Width after separated, 分割後のleftImage.pngの幅を示します。
     /// </summary>
     public bool IsReadyToLoad
     {
@@ -46,7 +48,7 @@ public class FileLoader : MonoBehaviour
 
     /// <summary>
     /// 他のスクリプトから参照可能なOriginalWidthプロパティ（読み取り専用）。
-    /// Width after separated, 分割後のleftImageの幅を示します（元画像の半分の幅）。
+    /// Width after separated, 分割後のleftImage.pngの幅を示します。
     /// </summary>
     public int OriginalWidth
     {
@@ -59,7 +61,7 @@ public class FileLoader : MonoBehaviour
 
     /// <summary>
     /// 他のスクリプトから参照可能なOriginalHeightプロパティ（読み取り専用）。
-    /// Height after separeted, 分割後のleftImageの高さを示します（元画像と同じ高さ）。
+    /// Height after separeted, 分割後のleftImage.pngの高さを示します。
     /// </summary>
     public int OriginalHeight
     {
@@ -120,6 +122,18 @@ public class FileLoader : MonoBehaviour
         get { return _meshY; }
     }
 
+    // 360画像かどうかの内部フィールド
+    [SerializeField]
+    private bool _is360;
+
+    /// <summary>
+    /// 360image = true, else = false
+    /// </summary>
+    public bool is360
+    {
+        get { return _is360; }  
+    }
+
     /// <summary>
     /// Imageが作成された際に発生するUnityEvent。
     /// 引数として新しく作成されたImageのGameObjectとSpriteを渡します。
@@ -178,6 +192,17 @@ public class FileLoader : MonoBehaviour
     {
         // Get the file path of the first selected file
         string filePath = filePaths[0];
+
+        // Check whether 360 photo or not
+        int position = filePath.IndexOf(".360.");
+        if (position == -1)
+        {
+            _is360 = false;
+        }
+        else
+        {
+            _is360 = true;
+        }
 
         // Read the bytes of the first file
         byte[] pngData = File.ReadAllBytes(filePath);
@@ -262,6 +287,7 @@ public class FileLoader : MonoBehaviour
 
         // Set min depth, プロパティに最近値をセット
         _pixelZMin = Mathf.Min(pixelZData);
+
 
         //_meshX, _meshY を計算
         var bestMesh = FindBestMeshSize(TARGET_MESH, DIFF);
