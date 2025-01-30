@@ -7,10 +7,11 @@
 そのPNG画像を読み込み、Meta Quest 2 などで 3D 画像を観るための Meta Quest Link 用アプリです。
 
 **v0.2.0** で Equirectangular な全天球画像を表示する機能を追加しました。また、バグをいくつか修正しました。
+**v0.2.1** で Log モードにおいて平面画像が極端な条件下で遠くに表示される不具合を修正しました。
 
 3D 画像用の PNG ファイルの作成に必要な Python スクリプトの実行には、別途 Depth Pro [[URL](https://github.com/apple/ml-depth-pro)] のインストールが必要です。
 
-### [ファイルのダウンロード](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v0.2.0)
+### [ファイルのダウンロード](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v0.2.1)
 
 ### 設定方法及び使用方法の概要
 1. Depth Pro を公式ページに記載の方法でインストール。
@@ -59,11 +60,13 @@ The following is an automatic translation by ChatGPT and is a provisional transl
 ### Overview
 Using the included Python script, this application creates a PNG image file that incorporates depth information estimated by Depth Pro, which is provided by Apple. By loading that PNG image, you can view it in 3D on devices like Meta Quest 2 via a Meta Quest Link application.
 
-In version **v0.2.0**, a feature was added to display Equirectangular full-sphere images, and several bugs were also fixed.
+- **v0.2.0**: A feature was added to display Equirectangular full-sphere images, and several bugs were also fixed.
+
+- **v0.2.1**: I fixed an issue where 2D images are displayed far away under extreme conditions in Log mode.
 
 A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-pro)] is required to run the Python script necessary for creating PNG files for 3D images.
 
-### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v0.2.0)
+### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v0.2.1)
 
 ### Outline of Setup and Usage
 1. Install Depth Pro following the instructions on the official page.

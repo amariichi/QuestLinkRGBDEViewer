@@ -103,6 +103,7 @@ public class GridMesh : MonoBehaviour
 
     //Z 方向のオフセット値
     private static float OFFSET = 0.3f;
+    private float[] positionZ;
 
     Transform meshTransform;
 
@@ -123,6 +124,7 @@ public class GridMesh : MonoBehaviour
         zValues = fileLoader.PixelZMatrix;
         zValueMax = fileLoader.PixelZMax;
         zValueMin = fileLoader.PixelZMin; //一番近い場所を0とする
+        positionZ = new float[(meshWidth + 1) * (meshHeight + 1)];
 
         // メッシュの縦横比となるべく一致するテクスチャを作成し、オリジナル画像を貼り付ける左下の場所を計算
         if ((float)((float)originalHeight / (float)originalWidth) <= (float)((float)meshHeight / (float)meshWidth))
@@ -457,10 +459,11 @@ public class GridMesh : MonoBehaviour
         linearOld = _linearity;
 
         // Update z coordinates, Z座標を更新
+        float magOffset = _magnificationZ * OFFSET;
         UpdateVertexZPositions(i =>
         {
             float zValue = zValuesMesh[i];
-
+            
             zValue += OFFSET;
 
             if (_linearity == "Log")
@@ -469,12 +472,13 @@ public class GridMesh : MonoBehaviour
             }
             zValue = _magnificationZ * zValue;
 
-            zValue -= _magnificationZ * OFFSET; //Log の分は無視
+            zValue -= magOffset; //Log の分は無視
 
             return zValue;
         });
     }
 
+    // Update Vertex Z Position, 頂点のZ座標を変更するメソッド
     // Update Vertex Z Position, 頂点のZ座標を変更するメソッド
     public void UpdateVertexZPositions(System.Func<int, float> zPositionFunc)
     {
@@ -489,9 +493,21 @@ public class GridMesh : MonoBehaviour
         else
         {
             // Update each vertices, 各頂点のZ座標を更新
+            float minZ = float.MaxValue;
             for (int i = 0; i < vertices.Length; i++)
             {
-                vertices[i].z = zPositionFunc(i);
+                float zValue = zPositionFunc(i);
+                positionZ[i] = zValue;
+                if (zValue < minZ)
+                {
+                    minZ = zValue;
+                }
+            }
+
+            // Update each vertices, 各頂点のZ座標を更新
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                vertices[i].z = positionZ[i] - minZ;
             }
         }
 
