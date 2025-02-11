@@ -43,7 +43,7 @@ z' = a \times Log(1 + z^b)
 - **右トリガー + コントローラー** 前後で画像の奥行きを調整します（上の数式の a を増減します。）。
 - **A ボタン** 奥行きを Log モードにします。
 - **B ボタン** 奥行きを Linear モードにします。
-- **右ハンドトリガー + コントローラー左右** 曲率半径を変更します。（左：曲がり具合を大きく、右：より平面に近く）。
+- **右ハンドトリガー + コントローラー左右** 曲率半径を変更します。（右：曲がり具合を大きく、左：より平面に近く）。
 
 ### Unity Editor への読み込み（自分でビルドしたり改造したい方向けの説明）
 - ソースファイルの内容を任意のフォルダに入れ、**`Assets` フォルダーの中に Unity-StarterSamples v71.0.0 [[URL](https://github.com/oculus-samples/Unity-StarterSamples/releases/tag/v71.0.0)] を追加します**（`Unity-StarterSamples-71.0.0` というフォルダとその中身が `Assets` フォルダに入っている状態。）。
@@ -101,7 +101,7 @@ z' = a \times Log(1 + z^b)
  - **Right Trigger + Controller** Moves the image’s depth forward or backward (adjusts the parameter a in the formula above).
  - **A Button** Switches the depth mode to Log.
  - **B Button** Switches the depth mode to Linear.
- - **Right Hand Trigger + Controller (Left/Right)** Adjusts the curvature radius (moving left increases the curvature, while moving right makes it closer to a flat plane).
+ - **Right Hand Trigger + Controller (Left/Right)** Adjusts the curvature radius (moving right increases the curvature, while moving left makes it closer to a flat plane).
 
 ### Loading into Unity Editor (for those who wish to build or modify it themselves)
  - Copy the source files into any folder, then **add Unity-StarterSamples v71.0.0 [[URL](https://github.com/oculus-samples/Unity-StarterSamples/releases/tag/v71.0.0)] into the `Assets` folder** (so that a folder named Unity-StarterSamples-71.0.0 and its contents are inside `Assets`).
