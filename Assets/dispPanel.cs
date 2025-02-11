@@ -36,7 +36,8 @@ public class dispPanel : MonoBehaviour
         content += "Controller R:\n";
         content += " - A / B: Set Z to be Linear / Log\n";
         content += " - Trigger + Move: Change Depth Magnification\n";
-        content += " - Stick L / R: Change Scale";
+        content += " - Stick L / R: Change Scale\n";
+        content += " - Hand Trigger + Move L / R, Angle Narrower, Wider";
 
         valueText.text = content;
 

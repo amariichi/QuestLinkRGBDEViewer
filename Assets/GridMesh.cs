@@ -28,10 +28,10 @@ public class GridMesh : MonoBehaviour
     private int texHeight;
 
     //texture position to paste, テクスチャのペースト位置(UV)に関する情報
-    [SerializeField]
-    private int pasteX;
-    [SerializeField]
-    private int pasteY;
+    //[SerializeField]
+    //private int pasteX;
+    //[SerializeField]
+    //private int pasteY;
 
     //estimated depth information
     private float[] zValuesMesh;
@@ -40,6 +40,10 @@ public class GridMesh : MonoBehaviour
 
     //image depth information
     private float[,] zValues;
+
+    //VU coordinates matrix, VU座標
+    float[,] uMatrix;
+    float[,] vMatrix;
 
     // Set reference to Material from Inspector, Materialへの参照をインスペクターから設定
     [SerializeField]
@@ -52,7 +56,15 @@ public class GridMesh : MonoBehaviour
     private float diameter = 2.0f;
 
     //Set initial position
+    [SerializeField]
     private Vector3 initPos;
+
+    private float centerZ = -2.0f; //部分曲面の中心のZ座標 must be 0 or below
+    private float centerZOld;
+    private float rad;　//部分曲面の半径
+
+    private const float CENTERZ_MAX = -0.75f;
+    private const float CENTERZ_MIN = -3.0f;
 
     private UnityEngine.Mesh mesh;             // keep reference to mesh, メッシュへの参照を保持
     private UnityEngine.Vector3[] vertices;    // keep vrtices, 頂点配列を保持
@@ -69,6 +81,7 @@ public class GridMesh : MonoBehaviour
     private float controllerPrevPosY = 0f;
     private float controllerPrevPosZ = 0f;
     private float controllerRPrevPosZ = 0f;
+    private float controllerRPrevPosX = 0f;
 
     //Z方向の拡大係数, Max, Min
     [SerializeField]
@@ -107,6 +120,9 @@ public class GridMesh : MonoBehaviour
 
     Transform meshTransform;
 
+    //平面画像の配置セットバック量
+    private const float SETBACK = 1.0f;
+
     /// <summary>
     /// イベントハンドラー：新しい画像が作成されたときに呼び出される
     /// </summary>
@@ -116,6 +132,7 @@ public class GridMesh : MonoBehaviour
         magOld = 0.0f;
         powerFigOld = 0.0f;
         linearOld = "Dummy";
+        centerZOld = centerZ;
 
         originalWidth = fileLoader.OriginalWidth;
         originalHeight = fileLoader.OriginalHeight;
@@ -131,15 +148,15 @@ public class GridMesh : MonoBehaviour
         {
             texWidth = originalWidth;
             texHeight = (int)((float)meshHeight * (float)originalWidth / (float)meshWidth);
-            pasteX = 0;
-            pasteY = (int)(((float)texHeight - (float)originalHeight) / 2f);
+            //pasteX = 0;
+            //pasteY = (int)(((float)texHeight - (float)originalHeight) / 2f);
         }
         else
         {
             texWidth = (int)((float)meshWidth * (float)originalHeight / (float)meshHeight);
             texHeight = originalHeight;
-            pasteX = (int)(((float)texWidth - (float)originalWidth) / 2f);
-            pasteY = 0;
+            //pasteX = (int)(((float)texWidth - (float)originalWidth) / 2f);
+            //pasteY = 0;
         }
         Texture2D newTexture = new Texture2D(texWidth, texHeight, TextureFormat.RGBA32, false);
 
@@ -152,7 +169,7 @@ public class GridMesh : MonoBehaviour
         newTexture.SetPixels(fillPixels);
 
         // Paste cropped pixels into new texture, クロップされたピクセルを新しいテクスチャに貼り付け
-        newTexture.SetPixels32(pasteX, pasteY, originalWidth, originalHeight, leftPixels);
+        newTexture.SetPixels32(0, 0, originalWidth, originalHeight, leftPixels);
         newTexture.Apply();
 
         // Materialにテクスチャを割り当てる
@@ -160,20 +177,17 @@ public class GridMesh : MonoBehaviour
         AssignTextureToMaterial(newTexture, materialL);
 
         //中心に動かす
-        Transform myTransform = this.transform;
+        meshTransform = transform;
         UnityEngine.Vector3 pos;
         if(fileLoader.is360)
         {
             pos = new Vector3(0, 0, 0);
-            _linearity = "Linear";
         }
         else
         {
-            pos.x = objectSize * (-0.5f);
-            pos.y = (float)meshHeight / (float)meshWidth * objectSize * (-0.5f);
-            pos.z = 1f;
+            pos = new Vector3(0, 0, 0);
         }
-        myTransform.position = pos;
+        meshTransform.position = pos;
         initPos = pos;
 
         if (fileLoader.is360)
@@ -185,8 +199,13 @@ public class GridMesh : MonoBehaviour
         else
         {
             //Meshを作成する Linearity = Log
-            _linearity = "Log";
-            CreateMesh(meshWidth, meshHeight);
+            _linearity = "Linear";
+            CreateMesh(meshWidth, meshHeight, centerZ);
+
+            meshTransform = transform;
+            Vector3 tfPos = meshTransform.position;
+            meshTransform.position = tfPos + new Vector3(0, 0, centerZ + SETBACK);
+
         }
 
         //メッシュの各頂点のZ値を計算
@@ -219,7 +238,7 @@ public class GridMesh : MonoBehaviour
         material.mainTexture = texture;
     }
 
-    //画像から抽出した Z 方向の情報をメッシュに適用
+    //画像から抽出した Z 方向の情報をメッシュに適用。メッシュを作成してから呼び出すこと！
     private float[] CalculateZValues()
     {
         float[] z = new float[(meshWidth + 1) * (meshHeight + 1)];
@@ -244,9 +263,18 @@ public class GridMesh : MonoBehaviour
         {
             for (int i = 0; i < meshWidth; i++)
             {
-                matrixColumn = Mathf.Min((int)((i - pasteX * meshScale) / meshScale), texWidth);
-                matrixRow = Mathf.Min((int)((j - pasteY * meshScale) / meshScale), texHeight);
-                z[j * (meshWidth + 1) + i] = zValues[matrixRow, matrixColumn] - zValueMin; //一番近いところ - offset値分だけ offset する。
+                if (fileLoader.is360)
+                {
+                    matrixColumn = Mathf.Min((int)(i / meshScale), texWidth);
+                    matrixRow = Mathf.Min((int)(j / meshScale), texHeight);
+                    z[j * (meshWidth + 1) + i] = zValues[matrixRow, matrixColumn] - zValueMin; //一番近いところ - offset値分だけ offset する。
+                }
+                else
+                {
+                    matrixColumn = Mathf.Min((int)(uMatrix[j, i] * texWidth), texWidth);
+                    matrixRow = Mathf.Min((int)(vMatrix[j, i] * texHeight), texHeight);
+                    z[j * (meshWidth + 1) + i] = zValues[matrixRow, matrixColumn] - zValueMin; //一番近いところ - offset値分だけ offset する。
+                }
             }
 
             // 一番右は左隣の値をコピー
@@ -272,6 +300,122 @@ public class GridMesh : MonoBehaviour
         //}
 
         return z;
+    }
+
+    //曲面に平面画像を貼り付ける
+    private void CreateMesh(int longitudeSegments, int latitudeSegments, float centerOffset)
+    {
+        _isMeshCreated = false;
+        float objectHalfWidth = objectSize / 2f;
+        float objectHalfHeight = objectHalfWidth * latitudeSegments / longitudeSegments;
+        float objectDistance = initPos.z - centerOffset;
+        float deltaTheta;
+        float deltaPhi;
+        if (objectDistance <= 0f)
+        {
+            deltaTheta = Mathf.PI;
+            deltaPhi = Mathf.PI;
+        }
+        else
+        {
+            deltaTheta = Mathf.Tan(objectHalfWidth / objectDistance) * 2f; //一番下から上までの角度
+            deltaPhi = Mathf.Tan(objectHalfHeight / objectDistance) * 2f;　//一番左から右までの角度
+
+        }
+        rad = Mathf.Sqrt((objectDistance) * (objectDistance) + (objectHalfWidth * objectHalfWidth) + (objectHalfHeight * objectHalfHeight));
+        float startTheta = (Mathf.PI - deltaTheta) / 2f;
+        float startPhi = (Mathf.PI - deltaPhi) / 2f;
+        float startThetaCos = Mathf.Cos(startTheta);
+        float startPhiCos = Mathf.Cos(startPhi);
+
+        mesh = new UnityEngine.Mesh();
+        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+        mesh.name = "InvertedPartialSphere";
+
+        int vertCount = (latitudeSegments + 1) * (longitudeSegments + 1);
+
+        // vertexPositions 配列を確保
+        vertexPositions = new Vector3[vertCount];
+        vertices = new Vector3[vertCount];
+
+        Vector3[] normals = new Vector3[vertCount];
+        Vector2[] uvs = new Vector2[vertCount];
+
+        int index = 0;
+        uMatrix = new float[latitudeSegments + 1, longitudeSegments + 1];
+        vMatrix = new float[latitudeSegments + 1, longitudeSegments + 1];
+
+        for (int lat = 0; lat <= latitudeSegments; lat++)
+        {
+            float latNormalized = (float)lat / latitudeSegments;
+            float phi = deltaPhi * (1f - latNormalized) + startPhi;
+            // (lat=0 で上を0にしたい場合などは
+            //   float phi = Mathf.PI * latNormalized; 
+            // とすれば上下が逆になります)
+
+            for (int lon = 0; lon <= longitudeSegments; lon++)
+            {
+                float lonNormalized = (float)lon / longitudeSegments;
+                float theta = deltaTheta * (1f - lonNormalized) + startTheta;
+                //内側からみるので、逆回りにする
+
+                float x = Mathf.Sin(phi) * Mathf.Cos(theta);
+                float y = Mathf.Cos(phi);
+                float z = Mathf.Sin(phi) * Mathf.Sin(theta);
+
+                // 頂点座標
+                Vector3 pos = new Vector3(x, y, z) * rad;
+                vertices[index] = pos;
+                vertexPositions[index] = pos;
+
+                // 内側向き法線
+                normals[index] = -new Vector3(x, y, z);
+
+                //float u = lonNormalized;
+                //float v = latNormalized;
+                float u = Mathf.Cos(theta) / startThetaCos / 2 + 0.5f;
+                float v = Mathf.Cos(phi) / startPhiCos / 2 + 0.5f;
+                uvs[index] = new Vector2(u, v);
+                uMatrix[lat, lon] = u;
+                vMatrix[lat, lon] = v;
+                index++;
+            }
+        }
+
+        // 三角形インデックスを生成
+        int[] triangles = new int[latitudeSegments * longitudeSegments * 6];
+        int triIndex = 0;
+
+        for (int lat = 0; lat < latitudeSegments; lat++)
+        {
+            for (int lon = 0; lon < longitudeSegments; lon++)
+            {
+                int current = lat * (longitudeSegments + 1) + lon;
+                int next = current + longitudeSegments + 1;
+
+                triangles[triIndex++] = current;
+                triangles[triIndex++] = next;
+                triangles[triIndex++] = current + 1;
+
+                triangles[triIndex++] = current + 1;
+                triangles[triIndex++] = next;
+                triangles[triIndex++] = next + 1;
+            }
+        }
+
+        mesh.vertices = vertices;
+        mesh.normals = normals;
+        mesh.uv = uvs;
+        mesh.triangles = triangles;
+
+        //mesh.RecalculateBounds();
+        mesh.RecalculateNormals();
+
+        // Set mesh to MeshFilter, MeshFilterにメッシュを設定
+        MeshFilter mf = GetComponent<MeshFilter>();
+        mf.mesh = mesh;
+
+        //_isMeshCreated = true;
     }
 
     //Equirectangular 360 sphere image（Ricoh Theta で確認）用
@@ -361,77 +505,6 @@ public class GridMesh : MonoBehaviour
         mf.mesh = mesh;
     }
 
-    //通常画像のメッシュ作成用
-    public void CreateMesh(int meshWidth, int meshHeight)
-    {
-
-        ////Start to create Mesh, Mesh の作成開始
-        mesh = new UnityEngine.Mesh();
-        // Using UInt32 index, 頂点数が65535を超える場合は32ビットインデックスを使用
-        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-
-        int verticesPerRow = meshWidth + 1;
-        int verticesPerColumn = meshHeight + 1;
-        int numVertices = verticesPerRow * verticesPerColumn;
-        int numSquares = meshWidth * meshHeight;
-        int numTriangles = numSquares * 2;
-        int numIndices = numTriangles * 3;
-        float cellSize = objectSize / meshWidth;
-
-        vertices = new UnityEngine.Vector3[numVertices];
-        UnityEngine.Vector2[] uvs = new UnityEngine.Vector2[numVertices];
-        int[] triangles = new int[numIndices];
-
-        // Create vertices and UV in XY plane, 頂点とUVの生成（XY平面上に配置）
-        for (int y = 0; y < verticesPerColumn; y++)
-        {
-            for (int x = 0; x < verticesPerRow; x++)
-            {
-                int index = y * verticesPerRow + x;
-                vertices[index] = new UnityEngine.Vector3(x * cellSize, y * cellSize, 0); // Zを0に設定
-                uvs[index] = new UnityEngine.Vector2((float)x / meshWidth, (float)y / meshHeight);
-            }
-        }
-
-        // Create triangles, 三角形の生成
-        int triangleIndex = 0;
-        for (int y = 0; y < meshHeight; y++)
-        {
-            for (int x = 0; x < meshWidth; x++)
-            {
-                int bottomLeft = y * verticesPerRow + x;
-                int bottomRight = bottomLeft + 1;
-                int topLeft = bottomLeft + verticesPerRow;
-                int topRight = topLeft + 1;
-
-                // First Triangle, 1つ目の三角形
-                triangles[triangleIndex++] = bottomLeft;
-                triangles[triangleIndex++] = topLeft;
-                triangles[triangleIndex++] = topRight;
-
-                // Second Triangle, 2つ目の三角形
-                triangles[triangleIndex++] = bottomLeft;
-                triangles[triangleIndex++] = topRight;
-                triangles[triangleIndex++] = bottomRight;
-            }
-        }
-
-        // Apply data to mesh, メッシュにデータを適用
-        mesh.vertices = vertices;
-        mesh.uv = uvs;
-        mesh.triangles = triangles;
-
-        // Recalculate normals, 法線の再計算
-        mesh.RecalculateNormals();
-
-        // Set mesh to MeshFilter, MeshFilterにメッシュを設定
-        MeshFilter mf = GetComponent<MeshFilter>();
-        mf.mesh = mesh;
-
-        //// Finish, Mesh の作成終了
-        //Debug.Log("vertices.Length; " + vertices.Length);
-    }
-
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -441,18 +514,36 @@ public class GridMesh : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        bool passUpdateZpositions = true;
+
         if (!_isMeshCreated)
             return;
 
-        meshTransform = gameObject.transform;
+        meshTransform = transform;
 
         if (fileLoader.IsReadyToControl)
         {
             ObjectManipulation();
         };
 
+        //コントローラーRのハンドトリガーが左右にドラッグされた時、曲面を変更するためにメッシュを再作成する
+        if (centerZ != centerZOld)
+        {
+            centerZOld = centerZ;
+            CreateMesh(meshWidth, meshHeight, centerZ);
+            zValuesMesh = CalculateZValues();
+            _isMeshCreated = true;
+            passUpdateZpositions = false;
+        }
+
+        //オブジェクトの変形のチェック
+        if (_magnificationZ != magOld || _powerFig != powerFigOld || _linearity != linearOld)
+        {
+            passUpdateZpositions = false;
+        }
+
         //オブジェクトの変形がないときは、処理をバイパスする
-        if (_magnificationZ == magOld && _powerFig == powerFigOld && _linearity == linearOld)
+        if (passUpdateZpositions)
             return;
         magOld = _magnificationZ;
         powerFigOld = _powerFig;
@@ -479,7 +570,6 @@ public class GridMesh : MonoBehaviour
     }
 
     // Update Vertex Z Position, 頂点のZ座標を変更するメソッド
-    // Update Vertex Z Position, 頂点のZ座標を変更するメソッド
     public void UpdateVertexZPositions(System.Func<int, float> zPositionFunc)
     {
         if (fileLoader.is360)
@@ -493,21 +583,10 @@ public class GridMesh : MonoBehaviour
         else
         {
             // Update each vertices, 各頂点のZ座標を更新
-            float minZ = float.MaxValue;
             for (int i = 0; i < vertices.Length; i++)
             {
-                float zValue = zPositionFunc(i);
-                positionZ[i] = zValue;
-                if (zValue < minZ)
-                {
-                    minZ = zValue;
-                }
-            }
-
-            // Update each vertices, 各頂点のZ座標を更新
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                vertices[i].z = positionZ[i] - minZ;
+                Vector3 vertexDirection = vertexPositions[i].normalized;
+                vertices[i] = vertexPositions[i] + zPositionFunc(i) * vertexDirection;
             }
         }
 
@@ -523,15 +602,26 @@ public class GridMesh : MonoBehaviour
     void ObjectManipulation()
     {
         //triggerR が押し込まれている時にコントローラーをZ方向に動かすとmagnificationZが変化する。
+        //triggerR2 が押し込まれている時にコントローラーをZ方向に動かすとcenterZが変化する。
         float triggerR = OVRInput.Get(OVRInput.RawAxis1D.RIndexTrigger);
+        float triggerR2 = OVRInput.Get(OVRInput.RawAxis1D.RHandTrigger);
         UnityEngine.Vector3 localPosR = OVRInput.GetLocalControllerPosition(OVRInput.Controller.RTouch);
         float diffRZ = localPosR.z - controllerRPrevPosZ;
+        float diffRX = localPosR.x - controllerRPrevPosX;
         float factor = (_magnificationZ + 0.01f) / MAG_MAX;
         controllerRPrevPosZ = localPosR.z;
+        controllerRPrevPosX = localPosR.x;
+        Vector3 meshPos = meshTransform.position;
         if (triggerR > 0.7f)
         {
             _magnificationZ = Mathf.Max(Mathf.Min(_magnificationZ + factor * diffRZ * 100.0f, MAG_MAX), MAG_MIN);
         }
+        if (triggerR2 > 0.7f)
+        {
+            centerZ = Mathf.Max(Mathf.Min(centerZ + diffRX * 1.0f, CENTERZ_MAX), CENTERZ_MIN);
+        }
+
+        //Y, X ボタンで Z 方向の拡大係数を変更
         float diffPower = 0.01f;
         if (OVRInput.Get(OVRInput.RawButton.Y)) { _powerFig = Mathf.Min(_powerFig + diffPower, POW_MAX); }
         if (OVRInput.Get(OVRInput.RawButton.X)) { _powerFig = Mathf.Max(_powerFig - diffPower, POW_MIN); }
@@ -548,7 +638,7 @@ public class GridMesh : MonoBehaviour
         controllerPrevPosX = localPos.x;
         controllerPrevPosY = localPos.y;
         controllerPrevPosZ = localPos.z;
-        UnityEngine.Vector3 meshPos = meshTransform.position;
+        //UnityEngine.Vector3 meshPos = meshTransform.position;
         if (triggerL > 0.7f)
         {
             meshPos.x += diffX * 1.0f;
@@ -562,19 +652,21 @@ public class GridMesh : MonoBehaviour
         float transformY = stickPositionL.y * 0.01f;
         meshPos.x = meshPos.x + transformX;
         meshPos.z = meshPos.z + transformY;
-        meshTransform.position = meshPos;
 
         //stickRの左右でMeshの拡大縮小
         UnityEngine.Vector2 stickPositionR = OVRInput.Get(OVRInput.RawAxis2D.RThumbstick);
         float _mag = stickPositionR.x * 0.01f;
         UnityEngine.Vector3 objectMagnification = new UnityEngine.Vector3(_mag, _mag, _mag);
         meshTransform.localScale += objectMagnification;
+        meshPos.z += _mag * centerZ; //まあいいや
+
+        meshTransform.position = meshPos;
 
         //ファイルロードの際に GameObject の Z 位置を下げて File Browser に被らないようにする
         if (OVRInput.GetDown(OVRInput.Button.Start))
         {
-            meshTransform.position = initPos;
-            meshPos = initPos;
+            meshTransform.position = initPos + new Vector3(0, 0, centerZ + SETBACK);
+            meshPos = initPos + new Vector3(0, 0, centerZ + SETBACK);
             meshTransform.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
             _magnificationZ = 1f;
             _powerFig = 1f;

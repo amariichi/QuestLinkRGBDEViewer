@@ -6,12 +6,15 @@
 付属の Python スクリプトを使用して、Apple が公開した Depth Pro で推定したデプス情報を追加したPNG画像データを作成します。
 そのPNG画像を読み込み、Meta Quest 2 などで 3D 画像を観るための Meta Quest Link 用アプリです。
 
-**v0.2.0** で Equirectangular な全天球画像を表示する機能を追加しました。また、バグをいくつか修正しました。
-**v0.2.1** で Log モードにおいて平面画像が極端な条件下で遠くに表示される不具合を修正しました。
+- **v1.0.0** : 平面画像について、投影するメッシュを平面から曲面に変更しました。曲率半径は右ハンドトリガーを左右に動かして変更することができます。
+
+- **v0.2.1** : Log モードにおいて平面画像が極端な条件下で遠くに表示される不具合を修正しました。
+
+- **v0.2.0** : Equirectangular な全天球画像を表示する機能を追加しました。また、バグをいくつか修正しました。
 
 3D 画像用の PNG ファイルの作成に必要な Python スクリプトの実行には、別途 Depth Pro [[URL](https://github.com/apple/ml-depth-pro)] のインストールが必要です。
 
-### [ファイルのダウンロード](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v0.2.1)
+### [ファイルのダウンロード](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.0.0)
 
 ### 設定方法及び使用方法の概要
 1. Depth Pro を公式ページに記載の方法でインストール。
@@ -28,18 +31,19 @@
 [^2]: ファイルブラウザには、**UnitySimpleFileBrowser** [[URL](https://github.com/yasirkula/UnitySimpleFileBrowser)] を使用しています。作者の Süleyman Yasir KULA 氏に感謝申し上げます。
 
 ### アプリの具体的な使用方法
-- Start ボタン（左コントローラー）: ファイルブラウザーを起動します。
-- 左スティック: 画像の位置を前後又は左右に動かします。
-- 左トリガー + コントローラー：画像の位置を動かします。マウスのドラッグのように使用します。
-- 左ハンドトリガー：操作説明の表示／非表示を切り替えます。
-- X / Y ボタン: 画像の奥行きを調整します。奥行きが Log モードの時のみ作用します（Log モードで使用する下の数式の b を増減します。）。
+- **Start ボタン（左コントローラー）** ファイルブラウザーを起動します。
+- **左スティック** 画像の位置を前後又は左右に動かします。
+- **左トリガー + コントローラー** 画像の位置を動かします。マウスのドラッグのように使用します。
+- **左ハンドトリガー** 操作説明の表示／非表示を切り替えます。
+- **X / Y ボタン** 画像の奥行きを調整します。奥行きが Log モードの時のみ作用します（Log モードで使用する下の数式の b を増減します。）。
 ```math
 z' = a \times Log(1 + z^b)
 ```
-- 右スティック: 左右で画像を拡大・縮小します。
-- 右トリガー + コントローラー: 前後で画像の奥行きを調整します（上の数式の a を増減します。）。
-- A ボタン：奥行きを Log モードにします。
-- B ボタン: 奥行きを Linear モードにします。
+- **右スティック** 左右で画像を拡大・縮小します。
+- **右トリガー + コントローラー** 前後で画像の奥行きを調整します（上の数式の a を増減します。）。
+- **A ボタン** 奥行きを Log モードにします。
+- **B ボタン** 奥行きを Linear モードにします。
+- **右ハンドトリガー + コントローラー左右** 曲率半径を変更します。（左：曲がり具合を大きく、右：より平面に近く）。
 
 ### Unity Editor への読み込み（自分でビルドしたり改造したい方向けの説明）
 - ソースファイルの内容を任意のフォルダに入れ、**`Assets` フォルダーの中に Unity-StarterSamples v71.0.0 [[URL](https://github.com/oculus-samples/Unity-StarterSamples/releases/tag/v71.0.0)] を追加します**（`Unity-StarterSamples-71.0.0` というフォルダとその中身が `Assets` フォルダに入っている状態。）。
@@ -60,13 +64,15 @@ The following is an automatic translation by ChatGPT and is a provisional transl
 ### Overview
 Using the included Python script, this application creates a PNG image file that incorporates depth information estimated by Depth Pro, which is provided by Apple. By loading that PNG image, you can view it in 3D on devices like Meta Quest 2 via a Meta Quest Link application.
 
+- **v1.0.0**: For planar images, the projection mesh has been changed from a flat plane to a curved surface. You can adjust the curvature radius by moving the right hand trigger left or right.
+
 - **v0.2.0**: A feature was added to display Equirectangular full-sphere images, and several bugs were also fixed.
 
 - **v0.2.1**: I fixed an issue where 2D images are displayed far away under extreme conditions in Log mode.
 
 A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-pro)] is required to run the Python script necessary for creating PNG files for 3D images.
 
-### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v0.2.1)
+### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.0.0)
 
 ### Outline of Setup and Usage
 1. Install Depth Pro following the instructions on the official page.
@@ -83,18 +89,19 @@ A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-p
 [^4]: The file browser uses **UnitySimpleFileBrowser** [[URL](https://github.com/yasirkula/UnitySimpleFileBrowser)]. I extend my gratitude to its creator, Süleyman Yasir KULA
 
 ### Detailed Usage of the Application
- - Start Button (Left Controller): Opens the file browser.
- - Left Joystick: Moves the image forward/back or left/right.
- - Left Trigger + Controller: Moves the image, functioning like dragging with a mouse.
- - Left Hand Trigger: Toggles the display of the operation instructions.
- - X / Y Buttons: Adjust the depth of the image. These only work in Log mode (they increase or decrease parameter b in the formula below):
+ - **Start Button (Left Controller)** Opens the file browser.
+ - **Left Joystick** Moves the image forward/back or left/right.
+ - **Left Trigger + Controller** Moves the image, functioning like dragging with a mouse.
+ - **Left Hand Trigger** Toggles the display of the operation instructions.
+ - **X / Y Buttons** Adjust the depth of the image. These only work in Log mode (they increase or decrease parameter b in the formula below):
 ```math
 z' = a \times Log(1 + z^b)
 ```
- - Right Joystick: Moves left or right to zoom the image in or out.
- - Right Trigger + Controller: Moves the image’s depth forward or backward (adjusts the parameter a in the formula above).
- - A Button: Switches the depth mode to Log.
- - B Button: Switches the depth mode to Linear.
+ - **Right Joystick** Moves left or right to zoom the image in or out.
+ - **Right Trigger + Controller** Moves the image’s depth forward or backward (adjusts the parameter a in the formula above).
+ - **A Button** Switches the depth mode to Log.
+ - **B Button** Switches the depth mode to Linear.
+ - **Right Hand Trigger + Controller (Left/Right)** Adjusts the curvature radius (moving left increases the curvature, while moving right makes it closer to a flat plane).
 
 ### Loading into Unity Editor (for those who wish to build or modify it themselves)
  - Copy the source files into any folder, then **add Unity-StarterSamples v71.0.0 [[URL](https://github.com/oculus-samples/Unity-StarterSamples/releases/tag/v71.0.0)] into the `Assets` folder** (so that a folder named Unity-StarterSamples-71.0.0 and its contents are inside `Assets`).
