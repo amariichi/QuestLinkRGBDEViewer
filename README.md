@@ -17,7 +17,7 @@
 ### [ファイルのダウンロード](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.0.0)
 
 ### 設定方法及び使用方法の概要
-1. Depth Pro を公式ページに記載の方法でインストール。
+1. Depth Pro を公式ページに記載の方法でインストール。（必要に応じて、miniconda や git for windows を予め導入しておいてください。また、cv2(openCV) もインストールしてください。checkpoint は Hugging Face の該当ページ[[URL](https://huggingface.co/apple/DepthPro)]からのインストールが楽です。）
 2. 1.で Depth Pro をインストールしたフォルダに、`depth-pro_rgbde.py` をコピーするとともに `input` フォルダを作成。
 3. Quest 2 などで立体視したい画像（jpg又はpng）を `input` フォルダに入れる。
 4. ターミナル上で `python depth-pro_rgbde.py` と入力してスクリプトを実行。`output` フォルダに左半分が元画像で右半分がほぼ透明[^1] の PNG ファイルが生成されます。`--sphere` オプションを付けると、ファイル名が "xxx_RGBDE **.360** .png" となります。
@@ -75,7 +75,7 @@ A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-p
 ### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.0.0)
 
 ### Outline of Setup and Usage
-1. Install Depth Pro following the instructions on the official page.
+1. Install Depth Pro following the instructions on the official page (Please install Miniconda and Git for Windows in advance if necessary. Also, make sure to install cv2 (OpenCV). Installing the checkpoint from the corresponding Hugging Face page [[URL](https://huggingface.co/apple/DepthPro)] is easier method.)
 2. Copy `depth-pro_rgbde.py` to the folder where Depth Pro was installed, and create an `input` folder there as well.
 3. Place the images (jpg or png) you want to view in stereoscopic 3D (e.g., on Quest 2) into the `input` folder.
 4. Run the script by typing `python depth-pro_rgbde.py` in the terminal. A PNG file whose left half is the original image and whose right half is almost transparent[^3] will be generated in the `output` folder. When you use the `--sphere` option, the filename becomes xxx_RGBDE **.360** .png.
