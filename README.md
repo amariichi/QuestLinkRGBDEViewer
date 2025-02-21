@@ -6,18 +6,15 @@
 付属の Python スクリプトを使用して、Apple が公開した Depth Pro で推定したデプス情報を追加したPNG画像データを作成します。
 そのPNG画像を読み込み、Meta Quest 2 などで 3D 画像を観るための Meta Quest Link 用アプリです。
 
-- **v1.0.0** : 平面画像について、投影するメッシュを平面から曲面に変更しました。曲率半径は右ハンドトリガーを左右に動かして変更することができます。
+- **v1.0.1** : 計算ミスを修正
 
-- **v0.2.1** : Log モードにおいて平面画像が極端な条件下で遠くに表示される不具合を修正しました。
-
-- **v0.2.0** : Equirectangular な全天球画像を表示する機能を追加しました。また、バグをいくつか修正しました。
 
 3D 画像用の PNG ファイルの作成に必要な Python スクリプトの実行には、別途 Depth Pro [[URL](https://github.com/apple/ml-depth-pro)] のインストールが必要です。
 
-### [ファイルのダウンロード](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.0.0)
+### [ファイルのダウンロード](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.0.1)
 
 ### 設定方法及び使用方法の概要
-1. Depth Pro を公式ページに記載の方法でインストール。（必要に応じて、miniconda や git for windows を予め導入しておいてください。また、cv2(openCV) もインストールしてください。checkpoint は Hugging Face の該当ページ[[URL](https://huggingface.co/apple/DepthPro)]からのインストールが楽です。）
+1. Depth Pro を公式ページに記載の方法でインストール。
 2. 1.で Depth Pro をインストールしたフォルダに、`depth-pro_rgbde.py` をコピーするとともに `input` フォルダを作成。
 3. Quest 2 などで立体視したい画像（jpg又はpng）を `input` フォルダに入れる。
 4. ターミナル上で `python depth-pro_rgbde.py` と入力してスクリプトを実行。`output` フォルダに左半分が元画像で右半分がほぼ透明[^1] の PNG ファイルが生成されます。`--sphere` オプションを付けると、ファイル名が "xxx_RGBDE **.360** .png" となります。
@@ -43,7 +40,7 @@ z' = a \times Log(1 + z^b)
 - **右トリガー + コントローラー** 前後で画像の奥行きを調整します（上の数式の a を増減します。）。
 - **A ボタン** 奥行きを Log モードにします。
 - **B ボタン** 奥行きを Linear モードにします。
-- **右ハンドトリガー + コントローラー左右** 曲率半径を変更します。（右：曲がり具合を大きく、左：より平面に近く）。
+- **右ハンドトリガー + コントローラー左右** 曲率半径を変更します。（左：曲がり具合を大きく、右：より平面に近く）。
 
 ### Unity Editor への読み込み（自分でビルドしたり改造したい方向けの説明）
 - ソースファイルの内容を任意のフォルダに入れ、**`Assets` フォルダーの中に Unity-StarterSamples v71.0.0 [[URL](https://github.com/oculus-samples/Unity-StarterSamples/releases/tag/v71.0.0)] を追加します**（`Unity-StarterSamples-71.0.0` というフォルダとその中身が `Assets` フォルダに入っている状態。）。
@@ -64,18 +61,14 @@ The following is an automatic translation by ChatGPT and is a provisional transl
 ### Overview
 Using the included Python script, this application creates a PNG image file that incorporates depth information estimated by Depth Pro, which is provided by Apple. By loading that PNG image, you can view it in 3D on devices like Meta Quest 2 via a Meta Quest Link application.
 
-- **v1.0.0**: For planar images, the projection mesh has been changed from a flat plane to a curved surface. You can adjust the curvature radius by moving the right hand trigger left or right.
-
-- **v0.2.0**: A feature was added to display Equirectangular full-sphere images, and several bugs were also fixed.
-
-- **v0.2.1**: I fixed an issue where 2D images are displayed far away under extreme conditions in Log mode.
+- **v1.0.1**: I corrected the calculation error.
 
 A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-pro)] is required to run the Python script necessary for creating PNG files for 3D images.
 
-### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.0.0)
+### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.0.1)
 
 ### Outline of Setup and Usage
-1. Install Depth Pro following the instructions on the official page (Please install Miniconda and Git for Windows in advance if necessary. Also, make sure to install cv2 (OpenCV). Installing the checkpoint from the corresponding Hugging Face page [[URL](https://huggingface.co/apple/DepthPro)] is easier method.)
+1. Install Depth Pro following the instructions on the official page.
 2. Copy `depth-pro_rgbde.py` to the folder where Depth Pro was installed, and create an `input` folder there as well.
 3. Place the images (jpg or png) you want to view in stereoscopic 3D (e.g., on Quest 2) into the `input` folder.
 4. Run the script by typing `python depth-pro_rgbde.py` in the terminal. A PNG file whose left half is the original image and whose right half is almost transparent[^3] will be generated in the `output` folder. When you use the `--sphere` option, the filename becomes xxx_RGBDE **.360** .png.
@@ -101,7 +94,7 @@ z' = a \times Log(1 + z^b)
  - **Right Trigger + Controller** Moves the image’s depth forward or backward (adjusts the parameter a in the formula above).
  - **A Button** Switches the depth mode to Log.
  - **B Button** Switches the depth mode to Linear.
- - **Right Hand Trigger + Controller (Left/Right)** Adjusts the curvature radius (moving right increases the curvature, while moving left makes it closer to a flat plane).
+ - **Right Hand Trigger + Controller (Left/Right)** Adjusts the curvature radius (moving left increases the curvature, while moving right makes it closer to a flat plane).
 
 ### Loading into Unity Editor (for those who wish to build or modify it themselves)
  - Copy the source files into any folder, then **add Unity-StarterSamples v71.0.0 [[URL](https://github.com/oculus-samples/Unity-StarterSamples/releases/tag/v71.0.0)] into the `Assets` folder** (so that a folder named Unity-StarterSamples-71.0.0 and its contents are inside `Assets`).

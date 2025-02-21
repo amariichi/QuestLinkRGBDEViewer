@@ -4641,10 +4641,8 @@ MonoBehaviour:
   meshHeight: 0
   texWidth: 0
   texHeight: 0
-  pasteX: 0
-  pasteY: 0
   materialL: {fileID: 2100000, guid: 3c7dcfcec874864448d017a10556ead5, type: 2}
-  rad: 0
+  initPos: {x: 0, y: 0, z: 0}
   _magnificationZ: 1
 --- !u!23 &836327485
 MeshRenderer:

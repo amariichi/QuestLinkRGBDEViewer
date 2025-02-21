@@ -59,12 +59,12 @@ public class GridMesh : MonoBehaviour
     [SerializeField]
     private Vector3 initPos;
 
-    private float centerZ = -2.0f; //部分曲面の中心のZ座標 must be 0 or below
+    private const float CENTERZ_MAX = -0.25f;
+    private const float CENTERZ_MIN = -4.0f;
+
+    private float centerZ = CENTERZ_MIN; //部分曲面の中心のZ座標 must be 0 or below
     private float centerZOld;
     private float rad;　//部分曲面の半径
-
-    private const float CENTERZ_MAX = -0.75f;
-    private const float CENTERZ_MIN = -3.0f;
 
     private UnityEngine.Mesh mesh;             // keep reference to mesh, メッシュへの参照を保持
     private UnityEngine.Vector3[] vertices;    // keep vrtices, 頂点配列を保持
@@ -107,7 +107,7 @@ public class GridMesh : MonoBehaviour
     private float powerFigOld;
 
     //Z方向の計算方法
-    private string _linearity = "Log";
+    private string _linearity = "Linear";
     public string Linearity
     {
         get { return _linearity; }
@@ -192,19 +192,20 @@ public class GridMesh : MonoBehaviour
 
         if (fileLoader.is360)
         {
-            //Meshを作成する(360) Linearity = linear
+            //Meshを作成する(360) Linearity = Linear
             _linearity = "Linear";
             GenerateInvertedSphere(meshWidth, meshHeight);
         }
         else
         {
-            //Meshを作成する Linearity = Log
+            //Meshを作成する Linearity = Linear
             _linearity = "Linear";
             CreateMesh(meshWidth, meshHeight, centerZ);
 
             meshTransform = transform;
             Vector3 tfPos = meshTransform.position;
             meshTransform.position = tfPos + new Vector3(0, 0, centerZ + SETBACK);
+            //meshTransform.position = tfPos + new Vector3(0, 0, SETBACK);
 
         }
 
@@ -267,13 +268,13 @@ public class GridMesh : MonoBehaviour
                 {
                     matrixColumn = Mathf.Min((int)(i / meshScale), texWidth);
                     matrixRow = Mathf.Min((int)(j / meshScale), texHeight);
-                    z[j * (meshWidth + 1) + i] = zValues[matrixRow, matrixColumn] - zValueMin; //一番近いところ - offset値分だけ offset する。
+                    z[j * (meshWidth + 1) + i] = zValues[matrixRow, matrixColumn] - zValueMin + OFFSET; //一番近いところ - offset値分だけ offset する。
                 }
                 else
                 {
                     matrixColumn = Mathf.Min((int)(uMatrix[j, i] * texWidth), texWidth);
                     matrixRow = Mathf.Min((int)(vMatrix[j, i] * texHeight), texHeight);
-                    z[j * (meshWidth + 1) + i] = zValues[matrixRow, matrixColumn] - zValueMin; //一番近いところ - offset値分だけ offset する。
+                    z[j * (meshWidth + 1) + i] = zValues[matrixRow, matrixColumn] - zValueMin + OFFSET; //一番近いところ - offset値分だけ offset する。
                 }
             }
 
@@ -307,7 +308,7 @@ public class GridMesh : MonoBehaviour
     {
         _isMeshCreated = false;
         float objectHalfWidth = objectSize / 2f;
-        float objectHalfHeight = objectHalfWidth * latitudeSegments / longitudeSegments;
+        float objectHalfHeight = objectHalfWidth * (float)latitudeSegments / (float)longitudeSegments;
         float objectDistance = initPos.z - centerOffset;
         float deltaTheta;
         float deltaPhi;
@@ -318,11 +319,11 @@ public class GridMesh : MonoBehaviour
         }
         else
         {
-            deltaTheta = Mathf.Tan(objectHalfWidth / objectDistance) * 2f; //一番下から上までの角度
-            deltaPhi = Mathf.Tan(objectHalfHeight / objectDistance) * 2f;　//一番左から右までの角度
+            deltaTheta = Mathf.Atan(objectHalfWidth / objectDistance) * 2f; //一番下から上までの角度
+            deltaPhi = Mathf.Atan(objectHalfHeight / objectDistance) * 2f; //一番左から右までの角度
 
         }
-        rad = Mathf.Sqrt((objectDistance) * (objectDistance) + (objectHalfWidth * objectHalfWidth) + (objectHalfHeight * objectHalfHeight));
+        rad = Mathf.Sqrt((objectDistance * objectDistance) + (objectHalfWidth * objectHalfWidth) + (objectHalfHeight * objectHalfHeight));
         float startTheta = (Mathf.PI - deltaTheta) / 2f;
         float startPhi = (Mathf.PI - deltaPhi) / 2f;
         float startThetaCos = Mathf.Cos(startTheta);
@@ -366,6 +367,7 @@ public class GridMesh : MonoBehaviour
                 // 頂点座標
                 Vector3 pos = new Vector3(x, y, z) * rad;
                 vertices[index] = pos;
+                //vertices[index] = pos + new Vector3(0, 0, centerZ);
                 vertexPositions[index] = pos;
 
                 // 内側向き法線
@@ -667,10 +669,12 @@ public class GridMesh : MonoBehaviour
         {
             meshTransform.position = initPos + new Vector3(0, 0, centerZ + SETBACK);
             meshPos = initPos + new Vector3(0, 0, centerZ + SETBACK);
+            //meshTransform.position = initPos + new Vector3(0, 0, SETBACK);
+            //meshPos = initPos + new Vector3(0, 0, SETBACK);
             meshTransform.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
             _magnificationZ = 1f;
             _powerFig = 1f;
-            _linearity = "Log";
+            _linearity = "Linear";
         }
 
     }
@@ -683,5 +687,4 @@ public class GridMesh : MonoBehaviour
 
         return _linearity;
     }
-
 }
