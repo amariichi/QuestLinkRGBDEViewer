@@ -27,12 +27,6 @@ public class GridMesh : MonoBehaviour
     [SerializeField]
     private int texHeight;
 
-    //texture position to paste, テクスチャのペースト位置(UV)に関する情報
-    //[SerializeField]
-    //private int pasteX;
-    //[SerializeField]
-    //private int pasteY;
-
     //estimated depth information
     private float[] zValuesMesh;
     private float zValueMax;
@@ -148,15 +142,11 @@ public class GridMesh : MonoBehaviour
         {
             texWidth = originalWidth;
             texHeight = (int)((float)meshHeight * (float)originalWidth / (float)meshWidth);
-            //pasteX = 0;
-            //pasteY = (int)(((float)texHeight - (float)originalHeight) / 2f);
         }
         else
         {
             texWidth = (int)((float)meshWidth * (float)originalHeight / (float)meshHeight);
             texHeight = originalHeight;
-            //pasteX = (int)(((float)texWidth - (float)originalWidth) / 2f);
-            //pasteY = 0;
         }
         Texture2D newTexture = new Texture2D(texWidth, texHeight, TextureFormat.RGBA32, false);
 
@@ -205,8 +195,6 @@ public class GridMesh : MonoBehaviour
             meshTransform = transform;
             Vector3 tfPos = meshTransform.position;
             meshTransform.position = tfPos + new Vector3(0, 0, centerZ + SETBACK);
-            //meshTransform.position = tfPos + new Vector3(0, 0, SETBACK);
-
         }
 
         //メッシュの各頂点のZ値を計算
@@ -367,14 +355,11 @@ public class GridMesh : MonoBehaviour
                 // 頂点座標
                 Vector3 pos = new Vector3(x, y, z) * rad;
                 vertices[index] = pos;
-                //vertices[index] = pos + new Vector3(0, 0, centerZ);
                 vertexPositions[index] = pos;
 
                 // 内側向き法線
                 normals[index] = -new Vector3(x, y, z);
 
-                //float u = lonNormalized;
-                //float v = latNormalized;
                 float u = Mathf.Cos(theta) / startThetaCos / 2 + 0.5f;
                 float v = Mathf.Cos(phi) / startPhiCos / 2 + 0.5f;
                 uvs[index] = new Vector2(u, v);
@@ -416,8 +401,6 @@ public class GridMesh : MonoBehaviour
         // Set mesh to MeshFilter, MeshFilterにメッシュを設定
         MeshFilter mf = GetComponent<MeshFilter>();
         mf.mesh = mesh;
-
-        //_isMeshCreated = true;
     }
 
     //Equirectangular 360 sphere image（Ricoh Theta で確認）用
@@ -604,7 +587,7 @@ public class GridMesh : MonoBehaviour
     void ObjectManipulation()
     {
         //triggerR が押し込まれている時にコントローラーをZ方向に動かすとmagnificationZが変化する。
-        //triggerR2 が押し込まれている時にコントローラーをZ方向に動かすとcenterZが変化する。
+        //triggerR2 が押し込まれている時にコントローラーを左右に動かすとcenterZが変化する。
         float triggerR = OVRInput.Get(OVRInput.RawAxis1D.RIndexTrigger);
         float triggerR2 = OVRInput.Get(OVRInput.RawAxis1D.RHandTrigger);
         UnityEngine.Vector3 localPosR = OVRInput.GetLocalControllerPosition(OVRInput.Controller.RTouch);
@@ -669,8 +652,6 @@ public class GridMesh : MonoBehaviour
         {
             meshTransform.position = initPos + new Vector3(0, 0, centerZ + SETBACK);
             meshPos = initPos + new Vector3(0, 0, centerZ + SETBACK);
-            //meshTransform.position = initPos + new Vector3(0, 0, SETBACK);
-            //meshPos = initPos + new Vector3(0, 0, SETBACK);
             meshTransform.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
             _magnificationZ = 1f;
             _powerFig = 1f;
