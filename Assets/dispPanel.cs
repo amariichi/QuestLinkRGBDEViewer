@@ -1,57 +1,61 @@
 using UnityEngine;
 using TMPro;
 
-public class dispPanel : MonoBehaviour
+public class DispPanel : MonoBehaviour
 {
     [SerializeField]
-    private GridMesh gridMesh;
+    private GridMesh _gridMesh;
 
     [SerializeField]
-    public GameObject showValue;
+    private GameObject _showValue;
 
-    TextMeshProUGUI valueText = null;
+    private TextMeshProUGUI _valueText = null;
 
-    private string content;
-    private int showPanel = 1;
-    UnityEngine.Vector3 pos = Vector3.zero;
+    private string _content;
+    private int _showPanel = 1;
+    private Vector3 _initialPosition = Vector3.zero;
 
-    void Awake()
+    private void Awake()
     {
-      valueText  = showValue.GetComponent<TextMeshProUGUI>();
-      pos = transform.localPosition;
+        _valueText = _showValue.GetComponent<TextMeshProUGUI>();
+        _initialPosition = transform.localPosition;
     }
 
-    void Update()
+    private void Update()
     {
-        content = "== QuestLinkRGBDEViewer ==\n\n";
-        content += "Linearity: " + gridMesh.Linearity + "\n\n";
-        content += "Depth Magnified: " + gridMesh.MagnificationZ + "\n";
-        content += "Depth PowerNum in Log: " + gridMesh.PowerFig + "\n\n";
-        content += "== Usage ==\n";
-        content += "Controller L:\n";
-        content += " - Start: Open File Browser\n";
-        content += " - Trigger + Move / Move Stick: Move Object\n";
-        content += " - Y / Z: Expand / Compress of Z\n";
-        content += " - Hand Trigger: Show / Hide this panel\n\n";
-        content += "Controller R:\n";
-        content += " - A / B: Set Z to be Linear / Log\n";
-        content += " - Trigger + Move: Change Depth Magnification\n";
-        content += " - Stick L / R: Change Scale\n";
-        content += " - Hand Trigger + Move L / R, Angle Narrower, Wider";
+        _content = "== QuestLinkRGBDEViewer ==\n\n";
+        _content += "Linearity: " + _gridMesh.Linearity + "\n\n";
+        _content += "Depth Magnified: " + _gridMesh.MagnificationZ + "\n";
+        _content += "Depth PowerNum in Log: " + _gridMesh.PowerFactor + "\n\n";
+        _content += "== Usage ==\n";
+        _content += "Controller L:\n";
+        _content += " - Start: Open File Browser\n";
+        _content += " - Trigger + Move / Move Stick: Move Object\n";
+        _content += " - Y / Z: Expand / Compress of Z\n";
+        _content += " - Hand Trigger: Show / Hide this panel\n\n";
+        _content += "Controller R:\n";
+        _content += " - A / B: Set Z to be Linear / Log\n";
+        _content += " - Trigger + Move: Change Depth Magnification\n";
+        _content += " - Stick L / R: Change Scale\n";
+        _content += " - Hand Trigger + Move L / R, Angle Narrower, Wider";
 
-        valueText.text = content;
+        _valueText.text = _content;
 
-        bool handTriggerL = OVRInput.GetDown(OVRInput.RawButton.LHandTrigger);
-        if (handTriggerL) { showPanel *= -1;}
-        if (showPanel == 1)
+        bool isLeftHandTriggerPressed = OVRInput.GetDown(OVRInput.RawButton.LHandTrigger);
+        if (isLeftHandTriggerPressed)
         {
-            transform.localPosition = pos;
+            _showPanel *= -1;
+        }
+
+        if (_showPanel == 1)
+        {
+            transform.localPosition = _initialPosition;
         }
         else
         {
-            UnityEngine.Vector3 _pos = pos;
-            _pos.x = -10000f;
-            transform.localPosition = _pos;
+            Vector3 hiddenPosition = _initialPosition;
+            hiddenPosition.x = -10000f;
+            transform.localPosition = hiddenPosition;
         }
     }
 }

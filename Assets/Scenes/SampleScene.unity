@@ -891,8 +891,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43db61075b0bd57439aecfc005f68bf2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridMesh: {fileID: 836327484}
-  showValue: {fileID: 626085548}
+  _gridMesh: {fileID: 836327484}
+  _showValue: {fileID: 626085548}
 --- !u!114 &155657506
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4634,15 +4634,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 046aa9a392ab69d4abaa47426394b240, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fileLoader: {fileID: 1305863339}
-  originalWidth: 0
-  originalHeight: 0
-  meshWidth: 0
-  meshHeight: 0
-  texWidth: 0
-  texHeight: 0
-  materialL: {fileID: 2100000, guid: 3c7dcfcec874864448d017a10556ead5, type: 2}
-  initPos: {x: 0, y: 0, z: 0}
+  _fileLoader: {fileID: 1305863339}
+  _meshMaterial: {fileID: 2100000, guid: 3c7dcfcec874864448d017a10556ead5, type: 2}
+  _originalWidth: 0
+  _originalHeight: 0
+  _meshWidth: 0
+  _meshHeight: 0
+  _texWidth: 0
+  _texHeight: 0
+  _initialPosition: {x: 0, y: 0, z: 0}
   _magnificationZ: 1
 --- !u!23 &836327485
 MeshRenderer:

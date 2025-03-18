@@ -4,27 +4,28 @@ using System.IO;
 using SimpleFileBrowser;
 using UnityEngine.Events;
 
-// Definition of custom UnityEvent, UnityEvent のカスタム定義
 [System.Serializable]
 public class ImageCreatedEvent : UnityEvent<Color32[]> { }
 
-
 public class FileLoader : MonoBehaviour
 {
-    // Target mesh size (in pixels, in total), 目標のメッシュサイズ（ピクセル単位、全体）
-    private const int TARGET_MESH = 250000;
-    private const int DIFF = 2000;
+    // Target mesh size (in pixels, total)
+    // 目標メッシュサイズ（ピクセル単位、全体）
+    private const int TargetMesh = 250000;
+    private const int MeshDiff = 2000;
 
-    // Variable that holds a reference to the last displayed image, 前回表示した画像の参照を保持する変数
-    private GameObject previousImageObject;
+    // Reference to the previously displayed image object
+    // 前回表示された画像オブジェクトの参照
+    private GameObject _previousImageObject;
 
-    // IsReadyToLoadの内部フィールド
+    // Internal field for readiness to load
+    // 読み込み準備の内部フィールド
     [SerializeField]
     private bool _isReadyToLoad = true;
 
     /// <summary>
-    /// 他のスクリプトから参照可能なOriginalWidthプロパティ（読み取り専用）。
-    /// Width after separated, 分割後のleftImage.pngの幅を示します。
+    /// Public property to check or set if loading is ready.
+    /// 読み込み準備完了かどうかを取得または設定するパブリックプロパティ
     /// </summary>
     public bool IsReadyToLoad
     {
@@ -32,116 +33,108 @@ public class FileLoader : MonoBehaviour
         set { _isReadyToLoad = value; }
     }
 
+    // Internal field for readiness to control
+    // コントロール準備の内部フィールド
     private bool _isReadyToControl;
     /// <summary>
-    /// 他のスクリプトから参照可能なコントローラー使用可能プロパティ（読み取り専用）。
+    /// Public property to check if control is ready.
+    /// コントロール準備完了かどうかを取得するパブリックプロパティ
     /// </summary>
     public bool IsReadyToControl
     {
         get { return _isReadyToControl; }
     }
 
-
-    // originalWidthの内部フィールド
     [SerializeField]
     private int _originalWidth = 0;
-
     /// <summary>
-    /// 他のスクリプトから参照可能なOriginalWidthプロパティ（読み取り専用）。
-    /// Width after separated, 分割後のleftImage.pngの幅を示します。
+    /// Public property for the original width after separation.
+    /// 分割後の元画像の幅（左側）のパブリックプロパティ
     /// </summary>
     public int OriginalWidth
     {
         get { return _originalWidth; }
     }
 
-    // originalHeightの内部フィールド
     [SerializeField]
     private int _originalHeight = 0;
-
     /// <summary>
-    /// 他のスクリプトから参照可能なOriginalHeightプロパティ（読み取り専用）。
-    /// Height after separeted, 分割後のleftImage.pngの高さを示します。
+    /// Public property for the original height after separation.
+    /// 分割後の元画像の高さのパブリックプロパティ
     /// </summary>
     public int OriginalHeight
     {
         get { return _originalHeight; }
     }
 
-    //Right side depth data (UInt32 stored in RGBA32) float[]
-    private float[] pixelZData;
+    // Right side depth data (UInt32 stored in RGBA32) as float array
+    // 右側の深度情報（RGBA32に格納されたUInt32）をfloat配列で保持
+    private float[] _pixelZData;
 
-    // pixelZMatrixの内部フィールド
+    // Internal field for the pixel Z matrix
+    // 深度情報の2次元配列（pixel Z matrix）の内部フィールド
     private float[,] _pixelZMatrix;
-
     /// <summary>
-    /// Right side depth data (UInt32 stored in RGBA32) float[y,x] (read-only) that can be referenced from other scripts.
-    /// 他のスクリプトから参照可能な右側デプスデータ（RGBA32にUInt32が格納）float[y,x]（読み取り専用）。
-    /// 奥行き参照の元データ
+    /// Public property for the depth data matrix [y, x].
+    /// 深度情報の2次元配列（[y,x]）のパブリックプロパティ
     /// </summary>
     public float[,] PixelZMatrix
     {
         get { return _pixelZMatrix; }
     }
 
-    // pixelZdataの最大値の内部フィールド
     private float _pixelZMax;
     public float PixelZMax
     {
         get { return _pixelZMax; }
     }
 
-    // pixelZdataの最小値の内部フィールド
     private float _pixelZMin;
     public float PixelZMin
     {
         get { return _pixelZMin; }
     }
 
-    // Mesh Width の内部フィールド
     [SerializeField]
     private int _meshX;
-
     /// <summary>
-    /// Choosed mesh width from dropdown list, ドロップダウンの選択結果によるメッシュの幅の数
+    /// Public property for the mesh width selected from the dropdown.
+    /// ドロップダウンから選択されたメッシュの横数のパブリックプロパティ
     /// </summary>
-    public int meshX
+    public int MeshX
     {
         get { return _meshX; }
     }
 
-    // Mesh Height の内部フィールド
     [SerializeField]
     private int _meshY;
-
     /// <summary>
-    /// Choosed mesh height from dropdown list, ドロップダウンの選択結果によるメッシュの縦の数
+    /// Public property for the mesh height selected from the dropdown.
+    /// ドロップダウンから選択されたメッシュの縦数のパブリックプロパティ
     /// </summary>
-    public int meshY
+    public int MeshY
     {
         get { return _meshY; }
     }
 
-    // 360画像かどうかの内部フィールド
     [SerializeField]
     private bool _is360;
-
     /// <summary>
-    /// 360image = true, else = false
+    /// Public property indicating if the image is a 360 image.
+    /// 360画像かどうかを示すパブリックプロパティ（trueなら360画像）
     /// </summary>
-    public bool is360
+    public bool Is360
     {
-        get { return _is360; }  
+        get { return _is360; }
     }
 
     /// <summary>
-    /// Imageが作成された際に発生するUnityEvent。
-    /// 引数として新しく作成されたImageのGameObjectとSpriteを渡します。
+    /// UnityEvent that is triggered when the image is created.
+    /// Imageが作成された際に発生するUnityEvent
     /// </summary>
     [SerializeField]
     public ImageCreatedEvent OnImageCreated;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         FileBrowser.SetFilters(true, new FileBrowser.Filter("RGBDE file", ".png", ".PNG"));
@@ -151,7 +144,6 @@ public class FileLoader : MonoBehaviour
         StartCoroutine(ShowLoadDialogCoroutine());
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (OVRInput.GetDown(OVRInput.Button.Start) && IsReadyToLoad)
@@ -162,55 +154,29 @@ public class FileLoader : MonoBehaviour
         }
     }
 
-    //UnitySimpleFileBrowser を立ち上げてファイルを読み込む
     private IEnumerator ShowLoadDialogCoroutine()
     {
-        // Show a load file dialog and wait for a response from user
-        // Load file/folder: file, Allow multiple selection: true
-        // Initial path: default (Documents), Initial filename: empty
-        // Title: "Load File", Submit button text: "Load"
         yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, null, null, "Select an RGBDE File", "Load");
-
-        // Dialog is closed
-        // Print whether the user has selected some files or cancelled the operation (FileBrowser.Success)
         Debug.Log(FileBrowser.Success);
-
         if (FileBrowser.Success)
         {
-            OnFilesSelected(FileBrowser.Result); // FileBrowser.Result is null, if FileBrowser.Success is false
+            OnFilesSelected(FileBrowser.Result);
         }
         else
         {
             OnFileNotSelected();
         }
-
         _isReadyToControl = true;
     }
 
-    //読み込むファイルが選択された場合にデータを取得して画像を分割する
     void OnFilesSelected(string[] filePaths)
     {
-        // Get the file path of the first selected file
         string filePath = filePaths[0];
-
-        // Check whether 360 photo or not
         int position = filePath.IndexOf(".360.");
-        if (position == -1)
-        {
-            _is360 = false;
-        }
-        else
-        {
-            _is360 = true;
-        }
+        _is360 = position != -1;
 
-        // Read the bytes of the first file
         byte[] pngData = File.ReadAllBytes(filePath);
-
-        // LoadImageを呼び出すと、実際の画像サイズに合わせて自動的に変更されます。
         Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-
-        // バイト配列のPNGデータを読み込んでTexture2Dに変換
         texture.LoadImage(pngData);
         StartCoroutine(SplitImage(texture));
     }
@@ -221,33 +187,29 @@ public class FileLoader : MonoBehaviour
     }
 
     /// <summary>
-    /// 画像を分割し、左半分をテクスチャにして、右半分からデプス情報を保存するコルーチン。
+    /// Coroutine that splits the image:
+    /// creates a texture from the left half and stores depth information from the right half.
+    /// 画像を分割し、左側をテクスチャ化し、右側から深度情報を取得するコルーチン
     /// </summary>
-    /// <param name="filePath">選択された画像のパス</param>
+    /// <param name="originalTexture">The original Texture2D loaded from file.</param>
     /// <returns>IEnumerator</returns>
     private IEnumerator SplitImage(Texture2D originalTexture)
     {
         if (originalTexture == null)
         {
-            //Debug.LogError("Failed to load texture.");
             yield break;
         }
 
-        // Set image width and height, 分割する幅と高さを設定
         _originalWidth = originalTexture.width / 2;
         _originalHeight = originalTexture.height;
 
-        // Create left texture, 左側のテクスチャを作成
         Texture2D leftTexture = new Texture2D(_originalWidth, _originalHeight, originalTexture.format, false);
-        // Create right texture, 右側のテクスチャを作成（リニアカラー空間として扱う）
-        Texture2D rightTexture = new Texture2D(originalTexture.width - _originalWidth, _originalHeight, originalTexture.format, false, true); // true for linear
+        Texture2D rightTexture = new Texture2D(originalTexture.width - _originalWidth, _originalHeight, originalTexture.format, false, true);
 
-        // Get pixel data, ピクセルデータを取得
         Color32[] originalPixels = originalTexture.GetPixels32();
         Color32[] leftPixels = new Color32[_originalWidth * _originalHeight];
         Color32[] rightPixels = new Color32[(originalTexture.width - _originalWidth) * _originalHeight];
 
-        // Copy left image pixels, 左側のピクセルをコピー
         for (int y = 0; y < _originalHeight; y++)
         {
             for (int x = 0; x < _originalWidth; x++)
@@ -256,7 +218,6 @@ public class FileLoader : MonoBehaviour
             }
         }
 
-        // Copy right image pixels,右側のピクセルをコピー
         for (int y = 0; y < _originalHeight; y++)
         {
             for (int x = _originalWidth; x < originalTexture.width; x++)
@@ -265,39 +226,29 @@ public class FileLoader : MonoBehaviour
             }
         }
 
-        // Calculate the depth information (y,x) from the right half of the image and make it into a two-dimensional arrayy.
-        // 右半分の画像から深度情報(y,x)を計算し２次元配列にする
-        pixelZData = new float[rightPixels.GetLength(0)];
-        for (int i = 0; i < pixelZData.Length; i++)
+        _pixelZData = new float[rightPixels.Length];
+        for (int i = 0; i < _pixelZData.Length; i++)
         {
-            pixelZData[i] = (rightPixels[i].a * 16777216f + rightPixels[i].b * 65536f + rightPixels[i].g * 256f + rightPixels[i].r) / 10000f;
+            _pixelZData[i] = (rightPixels[i].a * 16777216f + rightPixels[i].b * 65536f + rightPixels[i].g * 256f + rightPixels[i].r) / 10000f;
         }
 
-        _pixelZMatrix = new float[(int)(pixelZData.Length / _originalWidth), (int)(pixelZData.Length / _originalHeight)];
+        _pixelZMatrix = new float[_originalHeight, _originalWidth];
         for (int j = 0; j < _originalHeight; j++)
         {
             for (int i = 0; i < _originalWidth; i++)
             {
-                _pixelZMatrix[j, i] = pixelZData[j * _originalWidth + i];
+                _pixelZMatrix[j, i] = _pixelZData[j * _originalWidth + i];
             }
         }
 
-        // Set max depth, プロパティに最深値をセット
-        _pixelZMax = Mathf.Max(pixelZData);
+        _pixelZMax = Mathf.Max(_pixelZData);
+        _pixelZMin = Mathf.Min(_pixelZData);
 
-        // Set min depth, プロパティに最近値をセット
-        _pixelZMin = Mathf.Min(pixelZData);
+        var bestMesh = FindBestMeshSize(TargetMesh, MeshDiff);
+        _meshX = bestMesh.meshX;
+        _meshY = bestMesh.meshY;
 
-
-        //_meshX, _meshY を計算
-        var bestMesh = FindBestMeshSize(TARGET_MESH, DIFF);
-        _meshX = bestMesh.numX;
-        _meshY = bestMesh.numY;
-
-        // Invoke event to notify other objects, イベントを発火して他のオブジェクトに通知
         OnImageCreated?.Invoke(leftPixels);
-
-        // Release memory, メモリ解放
         Destroy(originalTexture);
         Destroy(rightTexture);
 
@@ -305,59 +256,40 @@ public class FileLoader : MonoBehaviour
     }
 
     /// <summary>
-    /// 画像の縦横比になるべく合致するメッシュの縦横の数を見つけるメソッド
+    /// Finds the best mesh size that closely matches the image's aspect ratio.
+    /// 画像のアスペクト比に最も近いメッシュの横・縦数を見つけるメソッド
     /// </summary>
-    /// <param name="total">メッシュの数</param>
-    /// <param name="diff">メッシュ数の許容される大小の幅 </param>
-    /// <returns>メッシュの数(bestX, bestY)</returns>
-    private (int numX, int numY) FindBestMeshSize(int total, int diff)
+    /// <param name="totalMeshes">Total number of meshes</param>
+    /// <param name="meshDiff">Allowed difference in mesh count</param>
+    /// <returns>Tuple containing meshX and meshY</returns>
+    private (int meshX, int meshY) FindBestMeshSize(int totalMeshes, int meshDiff)
     {
-        // 元画像のアスペクト比 (幅 / 高さ)
         double aspectRatio = (double)_originalWidth / _originalHeight;
-
-        // 許容範囲 (e.g. 248000～252000)
-        int minMesh = total - diff;
-        int maxMesh = total + diff;
-
-        // 最適解探索用
+        int minMesh = totalMeshes - meshDiff;
+        int maxMesh = totalMeshes + meshDiff;
         double bestRatioError = double.MaxValue;
-        int bestX = 0;
-        int bestY = 0;
+        int bestMeshX = 0;
+        int bestMeshY = 0;
 
-        // 許容範囲内の合計値について試す
-        // (差分 4001 回程度のループなのでそこまで重くはありません)
         for (int t = minMesh; t <= maxMesh; t++)
         {
             if (t <= 0) continue;
-
-            // x * y = t かつ (x / y) ≈ aspectRatio を想定した近似
-            // x^2 ≈ t * aspectRatio → x ≈ sqrt(t * aspectRatio)
-            int x = Mathf.RoundToInt((float)System.Math.Sqrt(t * aspectRatio));
-            if (x <= 0) continue;
-
-            // y = t / x 近似
-            int y = Mathf.RoundToInt(t / (float)x);
-
-            // product が再度 許容範囲内かどうかチェック
-            int product = x * y;
+            int approxX = Mathf.RoundToInt((float)System.Math.Sqrt(t * aspectRatio));
+            if (approxX <= 0) continue;
+            int approxY = Mathf.RoundToInt(t / (float)approxX);
+            int product = approxX * approxY;
             if (product < minMesh || product > maxMesh)
             {
-                // 合計値が許容範囲を逸脱していればスキップ
                 continue;
             }
-
-            // アスペクト比とどれくらい離れているか
-            double currentRatioError = System.Math.Abs((double)x / y - aspectRatio);
-
-            // 今までで最もアスペクト比に近ければ更新
+            double currentRatioError = System.Math.Abs((double)approxX / approxY - aspectRatio);
             if (currentRatioError < bestRatioError)
             {
                 bestRatioError = currentRatioError;
-                bestX = x;
-                bestY = y;
+                bestMeshX = approxX;
+                bestMeshY = approxY;
             }
         }
-        // 結果をメンバー変数に格納
-        return (bestX, bestY);
+        return (bestMeshX, bestMeshY);
     }
 }
