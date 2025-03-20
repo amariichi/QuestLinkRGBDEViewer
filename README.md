@@ -2,56 +2,56 @@
 
 ![Image](https://github.com/user-attachments/assets/c5ea84ca-8de5-48a4-bddf-a6d4e04204c4) ![Image](https://github.com/user-attachments/assets/b11d7d0a-a5f8-4304-b8e0-cd80d649e1a6) ![Image](https://github.com/user-attachments/assets/3df33d1f-4da0-4a2d-9433-8e44e1183219)
 
-### äTóv
-ïtëÆÇÃ Python ÉXÉNÉäÉvÉgÇégópÇµÇƒÅAApple Ç™åˆäJÇµÇΩ Depth Pro Ç≈êÑíËÇµÇΩÉfÉvÉXèÓïÒÇí«â¡ÇµÇΩPNGâÊëúÉfÅ[É^ÇçÏê¨ÇµÇ‹Ç∑ÅB
-ÇªÇÃPNGâÊëúÇì«Ç›çûÇ›ÅAMeta Quest 2 Ç»Ç«Ç≈ 3D âÊëúÇäœÇÈÇΩÇﬂÇÃ Meta Quest Link ópÉAÉvÉäÇ≈Ç∑ÅB
+### Ê¶ÇË¶Å
+‰ªòÂ±û„ÅÆ Python „Çπ„ÇØ„É™„Éó„Éà„Çí‰ΩøÁî®„Åó„Å¶„ÄÅApple „ÅåÂÖ¨Èñã„Åó„Åü Depth Pro „ÅßÊé®ÂÆö„Åó„Åü„Éá„Éó„ÇπÊÉÖÂ†±„ÇíËøΩÂä†„Åó„ÅüPNGÁîªÂÉè„Éá„Éº„Çø„Çí‰ΩúÊàê„Åó„Åæ„Åô„ÄÇ
+„Åù„ÅÆPNGÁîªÂÉè„ÇíË™≠„ÅøËæº„Åø„ÄÅMeta Quest 2 „Å™„Å©„Åß 3D ÁîªÂÉè„ÇíË¶≥„Çã„Åü„ÇÅ„ÅÆ Meta Quest Link Áî®„Ç¢„Éó„É™„Åß„Åô„ÄÇ
 
-- **v1.0.1** : åvéZÉ~ÉXÇèCê≥
+- **v1.0.1** : Ë®àÁÆó„Éü„Çπ„Çí‰øÆÊ≠£
 
 
-3D âÊëúópÇÃ PNG ÉtÉ@ÉCÉãÇÃçÏê¨Ç…ïKóvÇ» Python ÉXÉNÉäÉvÉgÇÃé¿çsÇ…ÇÕÅAï ìr Depth Pro [[URL](https://github.com/apple/ml-depth-pro)] ÇÃÉCÉìÉXÉgÅ[ÉãÇ™ïKóvÇ≈Ç∑ÅB
+3D ÁîªÂÉèÁî®„ÅÆ PNG „Éï„Ç°„Ç§„É´„ÅÆ‰ΩúÊàê„Å´ÂøÖË¶Å„Å™ Python „Çπ„ÇØ„É™„Éó„Éà„ÅÆÂÆüË°å„Å´„ÅØ„ÄÅÂà•ÈÄî Depth Pro [[URL](https://github.com/apple/ml-depth-pro)] [[Checkpoints URL](https://huggingface.co/apple/DepthPro)] „ÅÆ„Ç§„É≥„Çπ„Éà„Éº„É´„ÅåÂøÖË¶Å„Åß„Åô„ÄÇ
 
-### [ÉtÉ@ÉCÉãÇÃÉ_ÉEÉìÉçÅ[Éh](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.0.1)
+### [„Éï„Ç°„Ç§„É´„ÅÆ„ÉÄ„Ç¶„É≥„É≠„Éº„Éâ](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.0.1)
 
-### ê›íËï˚ñ@ãyÇ—égópï˚ñ@ÇÃäTóv
-1. Depth Pro ÇåˆéÆÉyÅ[ÉWÇ…ãLç⁄ÇÃï˚ñ@Ç≈ÉCÉìÉXÉgÅ[ÉãÅB
-2. 1.Ç≈ Depth Pro ÇÉCÉìÉXÉgÅ[ÉãÇµÇΩÉtÉHÉãÉ_Ç…ÅA`depth-pro_rgbde.py` ÇÉRÉsÅ[Ç∑ÇÈÇ∆Ç∆Ç‡Ç… `input` ÉtÉHÉãÉ_ÇçÏê¨ÅB
-3. Quest 2 Ç»Ç«Ç≈óßëÃéãÇµÇΩÇ¢âÊëúÅijpgñîÇÕpngÅjÇ `input` ÉtÉHÉãÉ_Ç…ì¸ÇÍÇÈÅB
-4. É^Å[É~ÉiÉãè„Ç≈ `python depth-pro_rgbde.py` Ç∆ì¸óÕÇµÇƒÉXÉNÉäÉvÉgÇé¿çsÅB`output` ÉtÉHÉãÉ_Ç…ç∂îºï™Ç™å≥âÊëúÇ≈âEîºï™Ç™ÇŸÇ⁄ìßñæ[^1] ÇÃ PNG ÉtÉ@ÉCÉãÇ™ê∂ê¨Ç≥ÇÍÇ‹Ç∑ÅB`--sphere` ÉIÉvÉVÉáÉìÇïtÇØÇÈÇ∆ÅAÉtÉ@ÉCÉãñºÇ™ "xxx_RGBDE **.360** .png" Ç∆Ç»ÇËÇ‹Ç∑ÅB
-5. è„ãLÇÃÉäÉìÉNÇ©ÇÁÉ_ÉEÉìÉçÅ[ÉhÇµÇΩÉAÉvÉäÇÃé¿çsÉtÉ@ÉCÉãÇîCà”ÇÃÉtÉHÉãÉ_Ç…âìÄÅB
-6. Meta Quest Link [[URL](https://www.meta.com/ja-jp/help/quest/pcvr/)] Ç≈ÉwÉbÉhÉZÉbÉgÇ PC Ç…ê⁄ë±ÅB
-7. ÉAÉvÉäÇé¿çsÇ∑ÇÈÇ∆ÉtÉ@ÉCÉãÉuÉâÉEÉU[^2]Ç™óßÇøè„Ç™ÇÈÇÃÇ≈ÅA4. Ç≈çÏê¨ÇµÇΩ PNG ÉtÉ@ÉCÉãÇëIëÇ∑ÇÈÇ∆âÊëúÇ™óßëÃï\é¶Ç≥ÇÍÇ‹Ç∑ÅBÉtÉ@ÉCÉãñºÇ™ `.360.png` Ç∆Ç»Ç¡ÇƒÇ¢ÇÈèÍçáÇÕÅAëSìVãÖâÊëúÇ∆ÇµÇƒèàóùÇ≥ÇÍÇ‹Ç∑ÅB `Sample_Images` ÉtÉHÉãÉ_Ç…Ç¢Ç≠Ç¬Ç©ÉTÉìÉvÉãâÊëúÇ™ì¸Ç¡ÇƒÇ¢Ç‹Ç∑ÅBÇ»Ç®ÅAÉtÉ@ÉCÉãÉuÉâÉEÉUÇÃà íuÇ™Ç®Ç©ÇµÇ¢èÍçáÇÕÅAâEÉRÉìÉgÉçÅ[ÉâÅ[ÇÃÉçÉSÉ}Å[ÉNÉ{É^ÉìÇâüÇµÇƒê≥ñ ÇÃà íuÇèCê≥ÇµÇƒÇ≠ÇæÇ≥Ç¢ÅB
-8. ëÄçÏï˚ñ@ÇÕâÊñ ÇÃç∂â∫Ç…ï\é¶Ç≥ÇÍÇƒÇ¢Ç‹Ç∑Åiç∂ÇÃ Hand Trigger ÇâüÇ∑Ç∆ê‡ñæÇÃï\é¶Å^îÒï\é¶ÇêÿÇËë÷Ç¶ÇÁÇÍÇ‹Ç∑ÅBÅjÅBç∂ÉRÉìÉgÉçÅ[ÉâÅ[ÇÃ Start É{É^ÉìÇâüÇ∑Ç∆ÅAÉtÉ@ÉCÉãÉuÉâÉEÉUÇ™ãNìÆÇµÇ‹Ç∑ÅBÇ‹ÇΩÅAÇªÇÃç€ÅAï\é¶íÜÇÃâÊëúÇÃà íuÇ»Ç«Ç™èâä˙âªÇ≥ÇÍÇ‹Ç∑ÅB
+### Ë®≠ÂÆöÊñπÊ≥ïÂèä„Å≥‰ΩøÁî®ÊñπÊ≥ï„ÅÆÊ¶ÇË¶Å
+1. Depth Pro „ÇíÂÖ¨Âºè„Éö„Éº„Ç∏„Å´Ë®òËºâ„ÅÆÊñπÊ≥ï„Åß„Ç§„É≥„Çπ„Éà„Éº„É´„ÄÇ
+2. 1.„Åß Depth Pro „Çí„Ç§„É≥„Çπ„Éà„Éº„É´„Åó„Åü„Éï„Ç©„É´„ÉÄ„Å´„ÄÅ`depth-pro_rgbde.py` „Çí„Ç≥„Éî„Éº„Åô„Çã„Å®„Å®„ÇÇ„Å´ `input` „Éï„Ç©„É´„ÉÄ„Çí‰ΩúÊàê„ÄÇ
+3. Quest 2 „Å™„Å©„ÅßÁ´ã‰ΩìË¶ñ„Åó„Åü„ÅÑÁîªÂÉèÔºàjpgÂèà„ÅØpngÔºâ„Çí `input` „Éï„Ç©„É´„ÉÄ„Å´ÂÖ•„Çå„Çã„ÄÇ
+4. „Çø„Éº„Éü„Éä„É´‰∏ä„Åß `python depth-pro_rgbde.py` „Å®ÂÖ•Âäõ„Åó„Å¶„Çπ„ÇØ„É™„Éó„Éà„ÇíÂÆüË°å„ÄÇ`output` „Éï„Ç©„É´„ÉÄ„Å´Â∑¶ÂçäÂàÜ„ÅåÂÖÉÁîªÂÉè„ÅßÂè≥ÂçäÂàÜ„Åå„Åª„ÅºÈÄèÊòé[^1] „ÅÆ PNG „Éï„Ç°„Ç§„É´„ÅåÁîüÊàê„Åï„Çå„Åæ„Åô„ÄÇ`--sphere` „Ç™„Éó„Ç∑„Éß„É≥„Çí‰ªò„Åë„Çã„Å®„ÄÅ„Éï„Ç°„Ç§„É´Âêç„Åå "xxx_RGBDE **.360** .png" „Å®„Å™„Çä„Åæ„Åô„ÄÇ
+5. ‰∏äË®ò„ÅÆ„É™„É≥„ÇØ„Åã„Çâ„ÉÄ„Ç¶„É≥„É≠„Éº„Éâ„Åó„Åü„Ç¢„Éó„É™„ÅÆÂÆüË°å„Éï„Ç°„Ç§„É´„Çí‰ªªÊÑè„ÅÆ„Éï„Ç©„É´„ÉÄ„Å´Ëß£Âáç„ÄÇ
+6. Meta Quest Link [[URL](https://www.meta.com/ja-jp/help/quest/pcvr/)] „Åß„Éò„ÉÉ„Éâ„Çª„ÉÉ„Éà„Çí PC „Å´Êé•Á∂ö„ÄÇ
+7. „Ç¢„Éó„É™„ÇíÂÆüË°å„Åô„Çã„Å®„Éï„Ç°„Ç§„É´„Éñ„É©„Ç¶„Ç∂[^2]„ÅåÁ´ã„Å°‰∏ä„Åå„Çã„ÅÆ„Åß„ÄÅ4. „Åß‰ΩúÊàê„Åó„Åü PNG „Éï„Ç°„Ç§„É´„ÇíÈÅ∏Êäû„Åô„Çã„Å®ÁîªÂÉè„ÅåÁ´ã‰ΩìË°®Á§∫„Åï„Çå„Åæ„Åô„ÄÇ„Éï„Ç°„Ç§„É´Âêç„Åå `.360.png` „Å®„Å™„Å£„Å¶„ÅÑ„ÇãÂ†¥Âêà„ÅØ„ÄÅÂÖ®Â§©ÁêÉÁîªÂÉè„Å®„Åó„Å¶Âá¶ÁêÜ„Åï„Çå„Åæ„Åô„ÄÇ `Sample_Images` „Éï„Ç©„É´„ÉÄ„Å´„ÅÑ„Åè„Å§„Åã„Çµ„É≥„Éó„É´ÁîªÂÉè„ÅåÂÖ•„Å£„Å¶„ÅÑ„Åæ„Åô„ÄÇ„Å™„Åä„ÄÅ„Éï„Ç°„Ç§„É´„Éñ„É©„Ç¶„Ç∂„ÅÆ‰ΩçÁΩÆ„Åå„Åä„Åã„Åó„ÅÑÂ†¥Âêà„ÅØ„ÄÅÂè≥„Ç≥„É≥„Éà„É≠„Éº„É©„Éº„ÅÆ„É≠„Ç¥„Éû„Éº„ÇØ„Éú„Çø„É≥„ÇíÊäº„Åó„Å¶Ê≠£Èù¢„ÅÆ‰ΩçÁΩÆ„Çí‰øÆÊ≠£„Åó„Å¶„Åè„Å†„Åï„ÅÑ„ÄÇ
+8. Êìç‰ΩúÊñπÊ≥ï„ÅØÁîªÈù¢„ÅÆÂ∑¶‰∏ã„Å´Ë°®Á§∫„Åï„Çå„Å¶„ÅÑ„Åæ„ÅôÔºàÂ∑¶„ÅÆ Hand Trigger „ÇíÊäº„Åô„Å®Ë™¨Êòé„ÅÆË°®Á§∫ÔºèÈùûË°®Á§∫„ÇíÂàá„ÇäÊõø„Åà„Çâ„Çå„Åæ„Åô„ÄÇÔºâ„ÄÇÂ∑¶„Ç≥„É≥„Éà„É≠„Éº„É©„Éº„ÅÆ Start „Éú„Çø„É≥„ÇíÊäº„Åô„Å®„ÄÅ„Éï„Ç°„Ç§„É´„Éñ„É©„Ç¶„Ç∂„ÅåËµ∑Âãï„Åó„Åæ„Åô„ÄÇ„Åæ„Åü„ÄÅ„Åù„ÅÆÈöõ„ÄÅË°®Á§∫‰∏≠„ÅÆÁîªÂÉè„ÅÆ‰ΩçÁΩÆ„Å™„Å©„ÅåÂàùÊúüÂåñ„Åï„Çå„Åæ„Åô„ÄÇ
 
-[^1]: Depth Pro ÇÃêÑíËÉfÉvÉXÇÃç≈ëÂílÇÕ 10,000m Ç≈Ç∑ÅBÇ±ÇÃÉfÉvÉXèÓïÒÇ 10,000 î{ÇµÇΩílÇ uint32 Ç…ÇµÇƒÅA8 ÉrÉbÉgÇ∏Ç¬ÉäÉgÉãÉGÉìÉfÉBÉAÉìÇ≈ RGBA Ç…ï€ë∂ÇµÇƒÇ¢Ç‹Ç∑ÇÃÇ≈ÅAÉAÉãÉtÉ@É`ÉÉÉìÉlÉãÇÃílÇÕ 5 à»ì‡Ç…é˚Ç‹ÇËÇ‹Ç∑ÅBÇ±ÇÃÇΩÇﬂâEë§ÇÕÇŸÇ⁄ìßñæÇÃâÊëúÇ∆Ç»Ç¡ÇƒÇ¢Ç‹Ç∑ÅB
+[^1]: Depth Pro „ÅÆÊé®ÂÆö„Éá„Éó„Çπ„ÅÆÊúÄÂ§ßÂÄ§„ÅØ 10,000m „Åß„Åô„ÄÇ„Åì„ÅÆ„Éá„Éó„ÇπÊÉÖÂ†±„Çí 10,000 ÂÄç„Åó„ÅüÂÄ§„Çí uint32 „Å´„Åó„Å¶„ÄÅ8 „Éì„ÉÉ„Éà„Åö„Å§„É™„Éà„É´„Ç®„É≥„Éá„Ç£„Ç¢„É≥„Åß RGBA „Å´‰øùÂ≠ò„Åó„Å¶„ÅÑ„Åæ„Åô„ÅÆ„Åß„ÄÅ„Ç¢„É´„Éï„Ç°„ÉÅ„É£„É≥„Éç„É´„ÅÆÂÄ§„ÅØ 5 ‰ª•ÂÜÖ„Å´Âèé„Åæ„Çä„Åæ„Åô„ÄÇ„Åì„ÅÆ„Åü„ÇÅÂè≥ÂÅ¥„ÅØ„Åª„ÅºÈÄèÊòé„ÅÆÁîªÂÉè„Å®„Å™„Å£„Å¶„ÅÑ„Åæ„Åô„ÄÇ
 
-[^2]: ÉtÉ@ÉCÉãÉuÉâÉEÉUÇ…ÇÕÅA**UnitySimpleFileBrowser** [[URL](https://github.com/yasirkula/UnitySimpleFileBrowser)] ÇégópÇµÇƒÇ¢Ç‹Ç∑ÅBçÏé“ÇÃ S?leyman Yasir KULA éÅÇ…ä¥é”ê\Çµè„Ç∞Ç‹Ç∑ÅB
+[^2]: „Éï„Ç°„Ç§„É´„Éñ„É©„Ç¶„Ç∂„Å´„ÅØ„ÄÅ**UnitySimpleFileBrowser** [[URL](https://github.com/yasirkula/UnitySimpleFileBrowser)] „Çí‰ΩøÁî®„Åó„Å¶„ÅÑ„Åæ„Åô„ÄÇ‰ΩúËÄÖ„ÅÆ S?leyman Yasir KULA Ê∞è„Å´ÊÑüË¨ùÁî≥„Åó‰∏ä„Åí„Åæ„Åô„ÄÇ
 
-### ÉAÉvÉäÇÃãÔëÃìIÇ»égópï˚ñ@
-- **Start É{É^ÉìÅiç∂ÉRÉìÉgÉçÅ[ÉâÅ[Åj** ÉtÉ@ÉCÉãÉuÉâÉEÉUÅ[ÇãNìÆÇµÇ‹Ç∑ÅB
-- **ç∂ÉXÉeÉBÉbÉN** âÊëúÇÃà íuÇëOå„ñîÇÕç∂âEÇ…ìÆÇ©ÇµÇ‹Ç∑ÅB
-- **ç∂ÉgÉäÉKÅ[ + ÉRÉìÉgÉçÅ[ÉâÅ[** âÊëúÇÃà íuÇìÆÇ©ÇµÇ‹Ç∑ÅBÉ}ÉEÉXÇÃÉhÉâÉbÉOÇÃÇÊÇ§Ç…égópÇµÇ‹Ç∑ÅB
-- **ç∂ÉnÉìÉhÉgÉäÉKÅ[** ëÄçÏê‡ñæÇÃï\é¶Å^îÒï\é¶ÇêÿÇËë÷Ç¶Ç‹Ç∑ÅB
-- **X / Y É{É^Éì** âÊëúÇÃâúçsÇ´Çí≤êÆÇµÇ‹Ç∑ÅBâúçsÇ´Ç™ Log ÉÇÅ[ÉhÇÃéûÇÃÇ›çÏópÇµÇ‹Ç∑ÅiLog ÉÇÅ[ÉhÇ≈égópÇ∑ÇÈâ∫ÇÃêîéÆÇÃ b Çëùå∏ÇµÇ‹Ç∑ÅBÅjÅB
+### „Ç¢„Éó„É™„ÅÆÂÖ∑‰ΩìÁöÑ„Å™‰ΩøÁî®ÊñπÊ≥ï
+- **Start „Éú„Çø„É≥ÔºàÂ∑¶„Ç≥„É≥„Éà„É≠„Éº„É©„ÉºÔºâ** „Éï„Ç°„Ç§„É´„Éñ„É©„Ç¶„Ç∂„Éº„ÇíËµ∑Âãï„Åó„Åæ„Åô„ÄÇ
+- **Â∑¶„Çπ„ÉÜ„Ç£„ÉÉ„ÇØ** ÁîªÂÉè„ÅÆ‰ΩçÁΩÆ„ÇíÂâçÂæåÂèà„ÅØÂ∑¶Âè≥„Å´Âãï„Åã„Åó„Åæ„Åô„ÄÇ
+- **Â∑¶„Éà„É™„Ç¨„Éº + „Ç≥„É≥„Éà„É≠„Éº„É©„Éº** ÁîªÂÉè„ÅÆ‰ΩçÁΩÆ„ÇíÂãï„Åã„Åó„Åæ„Åô„ÄÇ„Éû„Ç¶„Çπ„ÅÆ„Éâ„É©„ÉÉ„Ç∞„ÅÆ„Çà„ÅÜ„Å´‰ΩøÁî®„Åó„Åæ„Åô„ÄÇ
+- **Â∑¶„Éè„É≥„Éâ„Éà„É™„Ç¨„Éº** Êìç‰ΩúË™¨Êòé„ÅÆË°®Á§∫ÔºèÈùûË°®Á§∫„ÇíÂàá„ÇäÊõø„Åà„Åæ„Åô„ÄÇ
+- **X / Y „Éú„Çø„É≥** ÁîªÂÉè„ÅÆÂ••Ë°å„Åç„ÇíË™øÊï¥„Åó„Åæ„Åô„ÄÇÂ••Ë°å„Åç„Åå Log „É¢„Éº„Éâ„ÅÆÊôÇ„ÅÆ„Åø‰ΩúÁî®„Åó„Åæ„ÅôÔºàLog „É¢„Éº„Éâ„Åß‰ΩøÁî®„Åô„Çã‰∏ã„ÅÆÊï∞Âºè„ÅÆ b „ÇíÂ¢óÊ∏õ„Åó„Åæ„Åô„ÄÇÔºâ„ÄÇ
 ```math
 z' = a \times Log(1 + z^b)
 ```
-- **âEÉXÉeÉBÉbÉN** ç∂âEÇ≈âÊëúÇägëÂÅEèkè¨ÇµÇ‹Ç∑ÅB
-- **âEÉgÉäÉKÅ[ + ÉRÉìÉgÉçÅ[ÉâÅ[ëOå„** âÊëúÇÃâúçsÇ´Çí≤êÆÇµÇ‹Ç∑Åiè„ÇÃêîéÆÇÃ a Çëùå∏ÇµÇ‹Ç∑ÅBÅjÅB
-- **A É{É^Éì** âúçsÇ´Ç Log ÉÇÅ[ÉhÇ…ÇµÇ‹Ç∑ÅB
-- **B É{É^Éì** âúçsÇ´Ç Linear ÉÇÅ[ÉhÇ…ÇµÇ‹Ç∑ÅB
-- **âEÉnÉìÉhÉgÉäÉKÅ[ + ÉRÉìÉgÉçÅ[ÉâÅ[ç∂âE** ã»ó¶îºåaÇïœçXÇµÇ‹Ç∑ÅBÅiâEÅFã»Ç™ÇËãÔçáÇëÂÇ´Ç≠ÅAç∂ÅFÇÊÇËïΩñ Ç…ãﬂÇ≠ÅjÅB
+- **Âè≥„Çπ„ÉÜ„Ç£„ÉÉ„ÇØ** Â∑¶Âè≥„ÅßÁîªÂÉè„ÇíÊã°Â§ß„ÉªÁ∏ÆÂ∞è„Åó„Åæ„Åô„ÄÇ
+- **Âè≥„Éà„É™„Ç¨„Éº + „Ç≥„É≥„Éà„É≠„Éº„É©„ÉºÂâçÂæå** ÁîªÂÉè„ÅÆÂ••Ë°å„Åç„ÇíË™øÊï¥„Åó„Åæ„ÅôÔºà‰∏ä„ÅÆÊï∞Âºè„ÅÆ a „ÇíÂ¢óÊ∏õ„Åó„Åæ„Åô„ÄÇÔºâ„ÄÇ
+- **A „Éú„Çø„É≥** Â••Ë°å„Åç„Çí Log „É¢„Éº„Éâ„Å´„Åó„Åæ„Åô„ÄÇ
+- **B „Éú„Çø„É≥** Â••Ë°å„Åç„Çí Linear „É¢„Éº„Éâ„Å´„Åó„Åæ„Åô„ÄÇ
+- **Âè≥„Éè„É≥„Éâ„Éà„É™„Ç¨„Éº + „Ç≥„É≥„Éà„É≠„Éº„É©„ÉºÂ∑¶Âè≥** Êõ≤ÁéáÂçäÂæÑ„ÇíÂ§âÊõ¥„Åó„Åæ„Åô„ÄÇÔºàÂè≥ÔºöÊõ≤„Åå„ÇäÂÖ∑Âêà„ÇíÂ§ß„Åç„Åè„ÄÅÂ∑¶Ôºö„Çà„ÇäÂπ≥Èù¢„Å´Ëøë„ÅèÔºâ„ÄÇ
 
-### Unity Editor Ç÷ÇÃì«Ç›çûÇ›Åié©ï™Ç≈ÉrÉãÉhÇµÇΩÇËâ¸ë¢ÇµÇΩÇ¢ï˚å¸ÇØÇÃê‡ñæÅj
-- É\Å[ÉXÉtÉ@ÉCÉãÇÃì‡óeÇîCà”ÇÃÉtÉHÉãÉ_Ç…ì¸ÇÍÅA**`Assets` ÉtÉHÉãÉ_Å[ÇÃíÜÇ… Unity-StarterSamples v71.0.0 [[URL](https://github.com/oculus-samples/Unity-StarterSamples/releases/tag/v71.0.0)] Çí«â¡ÇµÇ‹Ç∑**Åi`Unity-StarterSamples-71.0.0` Ç∆Ç¢Ç§ÉtÉHÉãÉ_Ç∆ÇªÇÃíÜêgÇ™ `Assets` ÉtÉHÉãÉ_Ç…ì¸Ç¡ÇƒÇ¢ÇÈèÛë‘ÅBÅjÅB
-- Unity Hub ÇÃ "Add project from disk" ÉÅÉjÉÖÅ[Ç≈ÉCÉìÉXÉgÅ[ÉãÇµÇΩÉtÉHÉãÉ_ÇéwíËÇµÇ‹Ç∑ÅB
-- `Assets > Scenes` Ç©ÇÁÅA `Sample Scene` Ç Hierarchy ÉEÉCÉìÉhÉEÇ…ÉhÉçÉbÉvÇµÇƒÇ≠ÇæÇ≥Ç¢ÅBUnity Ç™é©ìÆí«â¡ÇµÇΩ Scene ÇÕçÌèúÇµÇƒÇ≠ÇæÇ≥Ç¢ÅB
-- Unity Editor ì‡Ç≈Ç‡ÉAÉvÉäÇÕìÆçÏÇµÇ‹Ç∑Åié¿çsëOÇ… Meta Quest Link Ç÷ÉSÅ[ÉOÉãÇê⁄ë±Ç∑ÇÈÇ±Ç∆Ç™ïKóvÇ≈Ç∑ÅBÅjÅB
+### Unity Editor „Å∏„ÅÆË™≠„ÅøËæº„ÅøÔºàËá™ÂàÜ„Åß„Éì„É´„Éâ„Åó„Åü„ÇäÊîπÈÄ†„Åó„Åü„ÅÑÊñπÂêë„Åë„ÅÆË™¨ÊòéÔºâ
+- „ÇΩ„Éº„Çπ„Éï„Ç°„Ç§„É´„ÅÆÂÜÖÂÆπ„Çí‰ªªÊÑè„ÅÆ„Éï„Ç©„É´„ÉÄ„Å´ÂÖ•„Çå„ÄÅ**`Assets` „Éï„Ç©„É´„ÉÄ„Éº„ÅÆ‰∏≠„Å´ Unity-StarterSamples v71.0.0 [[URL](https://github.com/oculus-samples/Unity-StarterSamples/releases/tag/v71.0.0)] „ÇíËøΩÂä†„Åó„Åæ„Åô**Ôºà`Unity-StarterSamples-71.0.0` „Å®„ÅÑ„ÅÜ„Éï„Ç©„É´„ÉÄ„Å®„Åù„ÅÆ‰∏≠Ë∫´„Åå `Assets` „Éï„Ç©„É´„ÉÄ„Å´ÂÖ•„Å£„Å¶„ÅÑ„ÇãÁä∂ÊÖã„ÄÇÔºâ„ÄÇ
+- Unity Hub „ÅÆ "Add project from disk" „É°„Éã„É•„Éº„Åß„Ç§„É≥„Çπ„Éà„Éº„É´„Åó„Åü„Éï„Ç©„É´„ÉÄ„ÇíÊåáÂÆö„Åó„Åæ„Åô„ÄÇ
+- `Assets > Scenes` „Åã„Çâ„ÄÅ `Sample Scene` „Çí Hierarchy „Ç¶„Ç§„É≥„Éâ„Ç¶„Å´„Éâ„É≠„ÉÉ„Éó„Åó„Å¶„Åè„Å†„Åï„ÅÑ„ÄÇUnity „ÅåËá™ÂãïËøΩÂä†„Åó„Åü Scene „ÅØÂâäÈô§„Åó„Å¶„Åè„Å†„Åï„ÅÑ„ÄÇ
+- Unity Editor ÂÜÖ„Åß„ÇÇ„Ç¢„Éó„É™„ÅØÂãï‰Ωú„Åó„Åæ„ÅôÔºàÂÆüË°åÂâç„Å´ Meta Quest Link „Å∏„Ç¥„Éº„Ç∞„É´„ÇíÊé•Á∂ö„Åô„Çã„Åì„Å®„ÅåÂøÖË¶Å„Åß„Åô„ÄÇÔºâ„ÄÇ
 
 ### Q&A
-**Q: í èÌÇÃ RGBD âÊëúÇ∆ÇÃà·Ç¢ÇÕâΩÇ≈Ç∑Ç©ÅB**
+**Q: ÈÄöÂ∏∏„ÅÆ RGBD ÁîªÂÉè„Å®„ÅÆÈÅï„ÅÑ„ÅØ‰Ωï„Åß„Åô„Åã„ÄÇ**
 
-**A:** í èÌÅARGBD âÊëúÇÕÅAå≥âÊëúÇÃâEë§Ç…255äKí≤ÇÃÉfÉvÉXèÓïÒÇï€éùÇµÇ‹Ç∑ÅBDepth Pro ïtëÆÇÃ `run.py` Ç≈ÇÕÅA0.1m Ç©ÇÁ 250m Ç‹Ç≈ÇÃÉfÉvÉXèÓïÒÇÃãtêîÇ≈äeÉsÉNÉZÉãÇÃÉfÉvÉXÇê≥ãKâªÇµÅA0 Ç©ÇÁ 255 Ç‹Ç≈ÇÃÉfÉvÉXÇäÑÇËìñÇƒÇƒÇ¢Ç‹Ç∑ÅBÇ±ÇÃï˚ñ@Ç≈ÇÕÅAãﬂÇ≠Ç…Ç†ÇÈîÌé ëÃÇÃÉfÉvÉXèÓïÒÇÃâëúìxÇÕçÇÇ¢Ç≈Ç∑Ç™ÅAó·Ç¶ÇŒínñ ÅAï«ÅAëêÅAãÙëRâfÇËçûÇÒÇæè¨Ç≥Ç»ï®ëÃÇ»Ç«Ç™éËëOÇ…Ç†ÇËÅAâúÇ…ÉÅÉCÉìÇÃîÌé ëÃÇ™Ç†ÇÈÇÊÇ§Ç»âÊëúÇÃèÍçáÅAÉÅÉCÉìÇÃîÌé ëÃÇÃÉfÉvÉXèÓïÒÇÃäKí≤Ç™í·Ç≠Ç»ÇËÅAâöì ÇÃè≠Ç»Ç¢èoóÕÇ∆Ç»Ç¡ÇƒÇµÇ‹Ç¢Ç‹Ç∑Åiâ∫ÇÃê}ÇéQè∆ÅjÅBàÍï˚ÅAÇ±ÇÃÉcÅ[ÉãÇÃÉXÉNÉäÉvÉgÇ≈ÇÕÅAå≥ÇÃ float ÇÃÉfÉvÉXèÓïÒÇÇPñúî{ÇµÇƒ `uint32` Ç≈ï€éùÇµÇƒÇ®ÇËÅAÉÅÉCÉìÇÃîÌé ëÃÇ…ÉYÅ[ÉÄÇµÇƒÇ‡ÉfÉvÉXÇÃèÓïÒÇ™å≥ÇÃêÑíËÇ«Ç®ÇËà€éùÇ≥ÇÍÇÈÇ±Ç∆Ç©ÇÁóßëÃä¥Ç™ëπÇ»ÇÌÇÍÇ‹ÇπÇÒÅB
+**A:** ÈÄöÂ∏∏„ÄÅRGBD ÁîªÂÉè„ÅØ„ÄÅÂÖÉÁîªÂÉè„ÅÆÂè≥ÂÅ¥„Å´255ÈöéË™ø„ÅÆ„Éá„Éó„ÇπÊÉÖÂ†±„Çí‰øùÊåÅ„Åó„Åæ„Åô„ÄÇDepth Pro ‰ªòÂ±û„ÅÆ `run.py` „Åß„ÅØ„ÄÅ0.1m „Åã„Çâ 250m „Åæ„Åß„ÅÆ„Éá„Éó„ÇπÊÉÖÂ†±„ÅÆÈÄÜÊï∞„ÅßÂêÑ„Éî„ÇØ„Çª„É´„ÅÆ„Éá„Éó„Çπ„ÇíÊ≠£Ë¶èÂåñ„Åó„ÄÅ0 „Åã„Çâ 255 „Åæ„Åß„ÅÆ„Éá„Éó„Çπ„ÇíÂâ≤„ÇäÂΩì„Å¶„Å¶„ÅÑ„Åæ„Åô„ÄÇ„Åì„ÅÆÊñπÊ≥ï„Åß„ÅØ„ÄÅËøë„Åè„Å´„ÅÇ„ÇãË¢´ÂÜô‰Ωì„ÅÆ„Éá„Éó„ÇπÊÉÖÂ†±„ÅÆËß£ÂÉèÂ∫¶„ÅØÈ´ò„ÅÑ„Åß„Åô„Åå„ÄÅ‰æã„Åà„Å∞Âú∞Èù¢„ÄÅÂ£Å„ÄÅËçâ„ÄÅÂÅ∂ÁÑ∂Êò†„ÇäËæº„Çì„Å†Â∞è„Åï„Å™Áâ©‰Ωì„Å™„Å©„ÅåÊâãÂâç„Å´„ÅÇ„Çä„ÄÅÂ••„Å´„É°„Ç§„É≥„ÅÆË¢´ÂÜô‰Ωì„Åå„ÅÇ„Çã„Çà„ÅÜ„Å™ÁîªÂÉè„ÅÆÂ†¥Âêà„ÄÅ„É°„Ç§„É≥„ÅÆË¢´ÂÜô‰Ωì„ÅÆ„Éá„Éó„ÇπÊÉÖÂ†±„ÅÆÈöéË™ø„Åå‰Ωé„Åè„Å™„Çä„ÄÅÂáπÂá∏„ÅÆÂ∞ë„Å™„ÅÑÂá∫Âäõ„Å®„Å™„Å£„Å¶„Åó„Åæ„ÅÑ„Åæ„ÅôÔºà‰∏ã„ÅÆÂõ≥„ÇíÂèÇÁÖßÔºâ„ÄÇ‰∏ÄÊñπ„ÄÅ„Åì„ÅÆ„ÉÑ„Éº„É´„ÅÆ„Çπ„ÇØ„É™„Éó„Éà„Åß„ÅØ„ÄÅÂÖÉ„ÅÆ float „ÅÆ„Éá„Éó„ÇπÊÉÖÂ†±„ÇíÔºë‰∏áÂÄç„Åó„Å¶ `uint32` „Åß‰øùÊåÅ„Åó„Å¶„Åä„Çä„ÄÅ„É°„Ç§„É≥„ÅÆË¢´ÂÜô‰Ωì„Å´„Ç∫„Éº„É†„Åó„Å¶„ÇÇ„Éá„Éó„Çπ„ÅÆÊÉÖÂ†±„ÅåÂÖÉ„ÅÆÊé®ÂÆö„Å©„Åä„ÇäÁ∂≠ÊåÅ„Åï„Çå„Çã„Åì„Å®„Åã„ÇâÁ´ã‰ΩìÊÑü„ÅåÊêç„Å™„Çè„Çå„Åæ„Åõ„Çì„ÄÇ
 
 ![fig](https://github.com/user-attachments/assets/15175e2d-41d7-4a30-a5a5-6748065f1ff2)
 
@@ -63,7 +63,7 @@ Using the included Python script, this application creates a PNG image file that
 
 - **v1.0.1**: I corrected the calculation error.
 
-A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-pro)] is required to run the Python script necessary for creating PNG files for 3D images.
+A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-pro)] [[Checkpoints URL](https://huggingface.co/apple/DepthPro)] is required to run the Python script necessary for creating PNG files for 3D images.
 
 ### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.0.1)
 
@@ -75,7 +75,7 @@ A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-p
 5. Unzip the downloaded application executable (from the link above) into any folder of your choice.
 6. Connect your headset (such as Meta Quest 2) to your PC via Meta Quest Link [[URL](https://www.meta.com/ja-jp/help/quest/pcvr/)].
 7. When you run the application, a file browser[^4] will appear. Select the PNG file you created in step 4 to view the image in 3D. In addition, if a filename ends with `.360.png`, it will be treated as a full-sphere image. Several sample images are included in the `Sample_Images` folder. If the file browser window appears in an odd position, press the logo-mark button on the right controller to reset the forward-facing direction.
-8. The operation instructions are shown at the bottom-left of the screen. Press the left controllerÅfs Start button to open the file browser. This also resets the position of the currently displayed image.
+8. The operation instructions are shown at the bottom-left of the screen. Press the left controller‚Äôs Start button to open the file browser. This also resets the position of the currently displayed image.
 
 [^3]: The maximum depth value estimated by Depth Pro is 10,000m. We multiply the original estimated depth value by 10,000, store it as a uint32, and then split it into 8-bit segments in little-endian order to save it as RGBA. As a result, alpha channel values are limited to 5 or below, making the right half of the image nearly transparent.
 
@@ -91,7 +91,7 @@ A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-p
 z' = a \times Log(1 + z^b)
 ```
  - **Right Joystick** Moves left or right to zoom the image in or out.
- - **Right Trigger + Controller** Moves the imageÅfs depth forward or backward (adjusts the parameter a in the formula above).
+ - **Right Trigger + Controller** Moves the image‚Äôs depth forward or backward (adjusts the parameter a in the formula above).
  - **A Button** Switches the depth mode to Log.
  - **B Button** Switches the depth mode to Linear.
  - **Right Hand Trigger + Controller (Left/Right)** Adjusts the curvature radius (moving right increases the curvature, while moving left makes it closer to a flat plane).
@@ -105,7 +105,7 @@ From `Assets > Scenes`, drag `Sample Scene` into the Hierarchy window. Remove an
 ### Q&A
 **Q: What is the difference from a typical RGBD image?**
 
-**A:** Typically, an RGBD image includes 8-bit (0?255) depth information on the right side of the original image. In the run.py script provided with Depth Pro, depth values from 0.1m to 250m are normalized by taking the reciprocal and assigning a range from 0 to 255. While this gives high-resolution depth data for close-up subjects, if there are objects like ground, walls, grass, or small items in the foreground, the main subject in the background will have a lower depth range, resulting in reduced 3D details (see the figure below). In contrast, this toolÅfs script multiplies the original floating-point depth values by 10,000 and stores them in uint32. As a result, even when zooming in on the main subject, the originally estimated depth remains intact, preserving a strong sense of 3D depth.
+**A:** Typically, an RGBD image includes 8-bit (0?255) depth information on the right side of the original image. In the run.py script provided with Depth Pro, depth values from 0.1m to 250m are normalized by taking the reciprocal and assigning a range from 0 to 255. While this gives high-resolution depth data for close-up subjects, if there are objects like ground, walls, grass, or small items in the foreground, the main subject in the background will have a lower depth range, resulting in reduced 3D details (see the figure below). In contrast, this tool‚Äôs script multiplies the original floating-point depth values by 10,000 and stores them in uint32. As a result, even when zooming in on the main subject, the originally estimated depth remains intact, preserving a strong sense of 3D depth.
 
 ![fig](https://github.com/user-attachments/assets/15175e2d-41d7-4a30-a5a5-6748065f1ff2)
 
