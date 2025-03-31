@@ -20,7 +20,7 @@
 4. ターミナル上で `python depth-pro_rgbde.py` と入力してスクリプトを実行。`output` フォルダに左半分が元画像で右半分がほぼ透明[^1] の PNG ファイルが生成されます。`--sphere` オプションを付けると、ファイル名が "xxx_RGBDE **.360** .png" となります。
 5. 上記のリンクからダウンロードしたアプリの実行ファイルを任意のフォルダに解凍。
 6. Meta Quest Link [[URL](https://www.meta.com/ja-jp/help/quest/pcvr/)] でヘッドセットを PC に接続。
-7. アプリを実行するとファイルブラウザ[^2]が立ち上がるので、4. で作成した PNG ファイルを選択すると画像が立体表示されます。ファイル名が `.360.png` となっている場合は、全天球画像として処理されます。 `Sample_Images` フォルダにいくつかサンプル画像が入っています。なお、ファイルブラウザの位置がおかしい場合は、右コントローラーのロゴマークボタンを押して正面の位置を修正してください。
+7. アプリを実行するとファイルブラウザ[^2]が立ち上がるので、4. で作成した PNG ファイルを選択すると画像が立体表示されます。ファイル名が `.360.png` となっている場合は、全天球画像として処理されます。 [Sample_Images](https://github.com/amariichi/QuestLinkRGBDEViewer/tree/main/Sample_Images) フォルダにいくつかサンプル画像が入っています。なお、ファイルブラウザの位置がおかしい場合は、右コントローラーのロゴマークボタンを押して正面の位置を修正してください。
 8. 操作方法は画面の左下に表示されています（左の Hand Trigger を押すと説明の表示／非表示を切り替えられます。）。左コントローラーの Start ボタンを押すと、ファイルブラウザが起動します。また、その際、表示中の画像の位置などが初期化されます。
 
 [^1]: Depth Pro の推定デプスの最大値は 10,000m です。このデプス情報を 10,000 倍した値を uint32 にして、8 ビットずつリトルエンディアンで RGBA に保存していますので、アルファチャンネルの値は 5 以内に収まります。このため右側はほぼ透明の画像となっています。
@@ -74,7 +74,7 @@ A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-p
 4. Run the script by typing `python depth-pro_rgbde.py` in the terminal. A PNG file whose left half is the original image and whose right half is almost transparent[^3] will be generated in the `output` folder. When you use the `--sphere` option, the filename becomes xxx_RGBDE **.360** .png.
 5. Unzip the downloaded application executable (from the link above) into any folder of your choice.
 6. Connect your headset (such as Meta Quest 2) to your PC via Meta Quest Link [[URL](https://www.meta.com/ja-jp/help/quest/pcvr/)].
-7. When you run the application, a file browser[^4] will appear. Select the PNG file you created in step 4 to view the image in 3D. In addition, if a filename ends with `.360.png`, it will be treated as a full-sphere image. Several sample images are included in the `Sample_Images` folder. If the file browser window appears in an odd position, press the logo-mark button on the right controller to reset the forward-facing direction.
+7. When you run the application, a file browser[^4] will appear. Select the PNG file you created in step 4 to view the image in 3D. In addition, if a filename ends with `.360.png`, it will be treated as a full-sphere image. Several sample images are included in the [Sample_Images](https://github.com/amariichi/QuestLinkRGBDEViewer/tree/main/Sample_Images) folder. If the file browser window appears in an odd position, press the logo-mark button on the right controller to reset the forward-facing direction.
 8. The operation instructions are shown at the bottom-left of the screen. Press the left controller’s Start button to open the file browser. This also resets the position of the currently displayed image.
 
 [^3]: The maximum depth value estimated by Depth Pro is 10,000m. We multiply the original estimated depth value by 10,000, store it as a uint32, and then split it into 8-bit segments in little-endian order to save it as RGBA. As a result, alpha channel values are limited to 5 or below, making the right half of the image nearly transparent.
