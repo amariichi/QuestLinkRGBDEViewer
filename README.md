@@ -2,16 +2,22 @@
 
 ![Image](https://github.com/user-attachments/assets/c5ea84ca-8de5-48a4-bddf-a6d4e04204c4) ![Image](https://github.com/user-attachments/assets/b11d7d0a-a5f8-4304-b8e0-cd80d649e1a6) ![Image](https://github.com/user-attachments/assets/3df33d1f-4da0-4a2d-9433-8e44e1183219)
 
+Language / 言語: [English](#english) | [日本語](#日本語)
+
+---
+
+## 日本語
+
 ### 概要
 付属の Python スクリプトを使用して、Apple が公開した Depth Pro で推定したデプス情報を追加したPNG画像データを作成します。
 そのPNG画像を読み込み、Meta Quest 2 などで 3D 画像を観るための Meta Quest Link 用アプリです。
 
-- **v1.0.1** : 計算ミスを修正
+- **v1.1.0** : 球面パッチを押し込む方式から、推定デプスで各ピクセルへ視線投影したメッシュ再構築と深度ノイズ対策を導入
 
 
 3D 画像用の PNG ファイルの作成に必要な Python スクリプトの実行には、別途 Depth Pro [[URL](https://github.com/apple/ml-depth-pro)] [[Checkpoints URL](https://huggingface.co/apple/DepthPro)] のインストールが必要です。
 
-### [ファイルのダウンロード](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.0.1)
+### [ファイルのダウンロード](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.1.0)
 
 ### 設定方法及び使用方法の概要
 1. Depth Pro を公式ページに記載の方法でインストール。
@@ -56,16 +62,19 @@ z' = a \times Log(1 + z^b)
 ![fig](https://github.com/user-attachments/assets/15175e2d-41d7-4a30-a5a5-6748065f1ff2)
 
 ---
+
+## English
+
 The following is an automatic translation by ChatGPT and is a provisional translation.
 
 ### Overview
 Using the included Python script, this application creates a PNG image file that incorporates depth information estimated by Depth Pro, which is provided by Apple. By loading that PNG image, you can view it in 3D on devices like Meta Quest 2 via a Meta Quest Link application.
 
-- **v1.0.1**: I corrected the calculation error.
+- **v1.1.0**: Replaced the spherical push mesh with per-pixel ray reconstruction using estimated depth and added depth noise mitigation.
 
 A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-pro)] [[Checkpoints URL](https://huggingface.co/apple/DepthPro)] is required to run the Python script necessary for creating PNG files for 3D images.
 
-### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.0.1)
+### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.1.0)
 
 ### Outline of Setup and Usage
 1. Install Depth Pro following the instructions on the official page.
@@ -108,6 +117,5 @@ From `Assets > Scenes`, drag `Sample Scene` into the Hierarchy window. Remove an
 **A:** Typically, an RGBD image includes 8-bit (0?255) depth information on the right side of the original image. In the run.py script provided with Depth Pro, depth values from 0.1m to 250m are normalized by taking the reciprocal and assigning a range from 0 to 255. While this gives high-resolution depth data for close-up subjects, if there are objects like ground, walls, grass, or small items in the foreground, the main subject in the background will have a lower depth range, resulting in reduced 3D details (see the figure below). In contrast, this tool’s script multiplies the original floating-point depth values by 10,000 and stores them in uint32. As a result, even when zooming in on the main subject, the originally estimated depth remains intact, preserving a strong sense of 3D depth.
 
 ![fig](https://github.com/user-attachments/assets/15175e2d-41d7-4a30-a5a5-6748065f1ff2)
-
 
 

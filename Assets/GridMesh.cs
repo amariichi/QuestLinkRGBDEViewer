@@ -6,65 +6,56 @@ using Color = UnityEngine.Color;
 [RequireComponent(typeof(MeshRenderer))]
 public class GridMesh : MonoBehaviour
 {
-    // Inspector-assigned fields
     [SerializeField] private FileLoader _fileLoader;
     [SerializeField] private Material _meshMaterial;
 
-    // Original frame size and initial scale
     [SerializeField] private int _originalWidth;
     [SerializeField] private int _originalHeight;
 
-    // Maximum mesh dimensions
     [SerializeField] private int _meshWidth;
     [SerializeField] private int _meshHeight;
 
-    // Final texture size adjusted to the mesh shape
     [SerializeField] private int _texWidth;
     [SerializeField] private int _texHeight;
 
-    // Estimated depth information
     private float[] _zValuesMesh;
     private float _zValueMax;
     private float _zValueMin;
 
-    // Image depth information
     private float[,] _zValues;
+    private float[,] _filteredDepth;
 
-    // VU coordinate matrices
     private float[,] _uMatrix;
     private float[,] _vMatrix;
 
-    // Object dimensions and initial position
+    private Vector3[] _vertices;
+    private Vector3[] _initialVertices;
+    private Vector3[] _rayDirections;
+    private float[] _pixelCoordX;
+    private float[] _pixelCoordY;
+
     private float _objectSize = 1.0f;
     private float _diameter = 2.0f;
     [SerializeField] private Vector3 _initialPosition;
 
-    // Constants for center Z limits
     private const float CENTER_Z_MAX = -0.25f;
     private const float CENTER_Z_MIN = -4.0f;
     private float _currentCenterZ = CENTER_Z_MIN;
     private float _previousCenterZ;
 
-    // Partial sphere radius (or object radius)
     private float _radius;
 
-    // Mesh and vertex arrays
     private Mesh _mesh;
-    private Vector3[] _vertices;
-    private Vector3[] _vertexPositions;
 
-    // Mesh creation flag
     private bool _isMeshCreated;
     public bool IsMeshCreated { get { return _isMeshCreated; } }
 
-    // Controller previous positions for input handling
     private float _prevControllerPosX = 0f;
     private float _prevControllerPosY = 0f;
     private float _prevControllerPosZ = 0f;
     private float _prevControllerRPosZ = 0f;
     private float _prevControllerRPosX = 0f;
 
-    // Z-axis magnification and power factors
     [SerializeField] private float _magnificationZ = 1.0f;
     public float MagnificationZ { get { return _magnificationZ; } }
     private float _prevMagnificationZ;
@@ -78,30 +69,42 @@ public class GridMesh : MonoBehaviour
     public float PowerFactor { get { return _powerFactor; } }
     private float _prevPowerFactor;
 
-    // Calculation method for Z-axis ("Linear" or "Log")
     private string _linearity = "Linear";
     public string Linearity { get { return _linearity; } }
     private string _prevLinearity;
 
-    // Z offset value and position array (if needed later)
     private const float OFFSET = 0.3f;
-    private float[] _positionZ;
 
-    // Transform for the mesh
     private Transform _meshTransform;
 
-    // Setback for the plane image placement
     private const float SETBACK = 1.0f;
+    private const float UI_CLEARANCE = 0.4f;
 
-    // Input thresholds and factors (extracted magic numbers)
     private const float TRIGGER_THRESHOLD = 0.7f;
     private const float CONTROLLER_DIFF_MULTIPLIER = 100.0f;
     private const float STICK_MOVE_FACTOR = 0.01f;
     private const float POWER_DIFF = 0.01f;
 
-    /// <summary>
-    /// Called when a new image is created; sets up texture and mesh.
-    /// </summary>
+    private const float MIN_FOV_Y = 30f;
+    private const float MAX_FOV_Y = 110f;
+    private const float MIN_DEPTH_CLAMP = 0.15f;
+
+    private const float DEPTH_SPIKE_THRESHOLD = 0.45f;
+    private const float DEPTH_STABLE_TOLERANCE = 0.12f;
+    private const float COLOR_EDGE_THRESHOLD = 0.10f;
+    private const float SMOOTH_BLEND = 0.30f;
+    private const float BILATERAL_DEPTH_SIGMA = 0.35f;
+    private const float BILATERAL_COLOR_SIGMA = 0.08f;
+
+    private static readonly float[,] SpatialKernel = new float[3, 3]
+    {
+        {0.075f, 0.124f, 0.075f},
+        {0.124f, 0.204f, 0.124f},
+        {0.075f, 0.124f, 0.075f}
+    };
+
+    private float _baseDepth;
+
     public void OnImageCreatedHandler(Color32[] leftPixels)
     {
         _prevMagnificationZ = 0.0f;
@@ -114,11 +117,12 @@ public class GridMesh : MonoBehaviour
         _meshWidth = _fileLoader.MeshX;
         _meshHeight = _fileLoader.MeshY;
         _zValues = _fileLoader.PixelZMatrix;
-        _zValueMax = _fileLoader.PixelZMax;
-        _zValueMin = _fileLoader.PixelZMin; // nearest point set to 0
-        _positionZ = new float[(_meshWidth + 1) * (_meshHeight + 1)];
+        _filteredDepth = PreprocessDepth(_zValues, leftPixels);
+        var extents = FindDepthExtents(_filteredDepth);
+        _zValueMin = Mathf.Max(extents.min, MIN_DEPTH_CLAMP);
+        _zValueMax = Mathf.Max(_zValueMin + 0.001f, extents.max);
+        _baseDepth = _zValueMin;
 
-        // Create texture with an aspect ratio matching the mesh
         if ((float)_originalHeight / _originalWidth <= (float)_meshHeight / _meshWidth)
         {
             _texWidth = _originalWidth;
@@ -131,47 +135,48 @@ public class GridMesh : MonoBehaviour
         }
         Texture2D newTexture = new Texture2D(_texWidth, _texHeight, TextureFormat.RGBA32, false);
 
-        // Fill texture with transparent black
         Color fillColor = new Color(0f, 0f, 0f, 0f);
         Color[] fillPixels = new Color[_texWidth * _texHeight];
         Array.Fill(fillPixels, fillColor);
         newTexture.SetPixels(fillPixels);
 
-        // Copy cropped pixels into new texture and apply
         newTexture.SetPixels32(0, 0, _originalWidth, _originalHeight, leftPixels);
         newTexture.Apply();
 
-        // Assign texture to material
         Destroy(_meshMaterial.mainTexture);
         AssignTextureToMaterial(newTexture, _meshMaterial);
 
-        // Center the mesh in the scene
         _meshTransform = transform;
         Vector3 pos = Vector3.zero;
         _meshTransform.position = pos;
         _initialPosition = pos;
 
+        int vertCount = (_meshWidth + 1) * (_meshHeight + 1);
+        _zValuesMesh = new float[vertCount];
+        _initialVertices = new Vector3[vertCount];
+        _vertices = new Vector3[vertCount];
+        _rayDirections = new Vector3[vertCount];
+        _pixelCoordX = new float[vertCount];
+        _pixelCoordY = new float[vertCount];
+
         if (_fileLoader.Is360)
         {
             _linearity = "Linear";
             GenerateInvertedSphere(_meshWidth, _meshHeight);
+            _zValuesMesh = CalculateZValuesFor360();
         }
         else
         {
             _linearity = "Linear";
-            CreateMesh(_meshWidth, _meshHeight, _currentCenterZ);
+            CreatePerspectiveMesh(_meshWidth, _meshHeight, _currentCenterZ);
             Vector3 tfPos = _meshTransform.position;
-            _meshTransform.position = tfPos + new Vector3(0, 0, _currentCenterZ + SETBACK);
+            _meshTransform.position = tfPos + new Vector3(0, 0, ComputeViewTranslation());
         }
 
-        _zValuesMesh = CalculateZValues();
         _isMeshCreated = true;
         _fileLoader.IsReadyToLoad = true;
     }
 
-    /// <summary>
-    /// Assigns the given texture to the specified material.
-    /// </summary>
     private void AssignTextureToMaterial(Texture2D texture, Material material)
     {
         if (material == null || texture == null)
@@ -179,74 +184,55 @@ public class GridMesh : MonoBehaviour
         material.mainTexture = texture;
     }
 
-    /// <summary>
-    /// Creates a partial sphere mesh using image data.
-    /// </summary>
-    private void CreateMesh(int longitudeSegments, int latitudeSegments, float centerOffset)
+    private void CreatePerspectiveMesh(int longitudeSegments, int latitudeSegments, float centerOffset)
     {
-        _isMeshCreated = false;
-        float objectHalfWidth = _objectSize / 2f;
-        float objectHalfHeight = objectHalfWidth * (float)latitudeSegments / longitudeSegments;
-        float objectDistance = _initialPosition.z - centerOffset;
-        float deltaTheta, deltaPhi;
-
-        if (objectDistance <= 0f)
-        {
-            deltaTheta = Mathf.PI;
-            deltaPhi = Mathf.PI;
-        }
-        else
-        {
-            deltaTheta = Mathf.Atan(objectHalfWidth / objectDistance) * 2f;
-            deltaPhi = Mathf.Atan(objectHalfHeight / objectDistance) * 2f;
-        }
-
-        _radius = Mathf.Sqrt(objectDistance * objectDistance + objectHalfWidth * objectHalfWidth + objectHalfHeight * objectHalfHeight);
-        float startTheta = (Mathf.PI - deltaTheta) / 2f;
-        float startPhi = (Mathf.PI - deltaPhi) / 2f;
-        float startThetaCos = Mathf.Cos(startTheta);
-        float startPhiCos = Mathf.Cos(startPhi);
-
         _mesh = new Mesh();
         _mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-        _mesh.name = "InvertedPartialSphere";
+        _mesh.name = "PerspectiveGrid";
 
-        int vertCount = (latitudeSegments + 1) * (longitudeSegments + 1);
-        _vertexPositions = new Vector3[vertCount];
-        _vertices = new Vector3[vertCount];
-        Vector3[] normals = new Vector3[vertCount];
-        Vector2[] uvs = new Vector2[vertCount];
+        Vector3[] normals = new Vector3[_zValuesMesh.Length];
+        Vector2[] uvs = new Vector2[_zValuesMesh.Length];
+
+        float fovY = ComputeVerticalFov(centerOffset) * Mathf.Deg2Rad;
+        float aspect = (float)_originalWidth / _originalHeight;
+        float fovX = 2f * Mathf.Atan(Mathf.Tan(fovY / 2f) * aspect);
+        float tanHalfX = Mathf.Tan(fovX / 2f);
+        float tanHalfY = Mathf.Tan(fovY / 2f);
+
+        float widthMinusOne = Mathf.Max(1, _originalWidth - 1);
+        float heightMinusOne = Mathf.Max(1, _originalHeight - 1);
+        float invHeightMinusOne = 1f / heightMinusOne;
+        float uScale = (float)_originalWidth / _texWidth;
+        float vScale = (float)_originalHeight / _texHeight;
 
         int index = 0;
-        _uMatrix = new float[latitudeSegments + 1, longitudeSegments + 1];
-        _vMatrix = new float[latitudeSegments + 1, longitudeSegments + 1];
-
         for (int lat = 0; lat <= latitudeSegments; lat++)
         {
-            float latNormalized = (float)lat / latitudeSegments;
-            float phi = deltaPhi * (1f - latNormalized) + startPhi;
+            float meshV = (float)lat / latitudeSegments;
+            float pixelY = (1f - meshV) * heightMinusOne;
             for (int lon = 0; lon <= longitudeSegments; lon++)
             {
-                float lonNormalized = (float)lon / longitudeSegments;
-                float theta = deltaTheta * (1f - lonNormalized) + startTheta;
+                float u = (float)lon / longitudeSegments;
+                float pixelX = u * widthMinusOne;
 
-                float x = Mathf.Sin(phi) * Mathf.Cos(theta);
-                float y = Mathf.Cos(phi);
-                float z = Mathf.Sin(phi) * Mathf.Sin(theta);
-                Vector3 pos = new Vector3(x, y, z) * _radius;
-                _vertices[index] = pos;
-                _vertexPositions[index] = pos;
-                normals[index] = -new Vector3(x, y, z);
-                float u = Mathf.Cos(theta) / startThetaCos / 2f + 0.5f;
-                float v = Mathf.Cos(phi) / startPhiCos / 2f + 0.5f;
-                uvs[index] = new Vector2(u, v);
-                _uMatrix[lat, lon] = u;
-                _vMatrix[lat, lon] = v;
+                float screenX = (u - 0.5f) * 2f * tanHalfX;
+                float screenY = (0.5f - meshV) * 2f * tanHalfY;
+                Vector3 dir = new Vector3(screenX, screenY, 1f).normalized;
+
+                float depth = SampleDepth(pixelX, pixelY);
+
+                _rayDirections[index] = dir;
+                _pixelCoordX[index] = pixelX;
+                _pixelCoordY[index] = pixelY;
+                _zValuesMesh[index] = depth;
+                _initialVertices[index] = dir * depth;
+                _vertices[index] = _initialVertices[index];
+                normals[index] = -dir;
+                uvs[index] = new Vector2(u * uScale, (1f - meshV) * vScale);
                 index++;
             }
         }
 
-        // Generate triangles using a shared method.
         int[] triangles = GenerateTriangles(longitudeSegments, latitudeSegments);
         _mesh.vertices = _vertices;
         _mesh.normals = normals;
@@ -254,13 +240,11 @@ public class GridMesh : MonoBehaviour
         _mesh.triangles = triangles;
 
         _mesh.RecalculateNormals();
+        _mesh.RecalculateBounds();
         MeshFilter meshFilter = GetComponent<MeshFilter>();
         meshFilter.mesh = _mesh;
     }
 
-    /// <summary>
-    /// Generates a full inverted sphere mesh (for 360Åã images).
-    /// </summary>
     private void GenerateInvertedSphere(int longitudeSegments, int latitudeSegments)
     {
         _mesh = new Mesh();
@@ -268,7 +252,7 @@ public class GridMesh : MonoBehaviour
         _mesh.name = "InvertedSphere";
 
         int vertCount = (latitudeSegments + 1) * (longitudeSegments + 1);
-        _vertexPositions = new Vector3[vertCount];
+        _initialVertices = new Vector3[vertCount];
         _vertices = new Vector3[vertCount];
         Vector3[] normals = new Vector3[vertCount];
         Vector2[] uvs = new Vector2[vertCount];
@@ -288,7 +272,7 @@ public class GridMesh : MonoBehaviour
                 float z = Mathf.Sin(phi) * Mathf.Sin(theta);
                 Vector3 pos = new Vector3(x, y, z) * radius;
                 _vertices[index] = pos;
-                _vertexPositions[index] = pos;
+                _initialVertices[index] = pos;
                 normals[index] = -new Vector3(x, y, z);
                 uvs[index] = new Vector2(lonNormalized, latNormalized);
                 index++;
@@ -306,9 +290,6 @@ public class GridMesh : MonoBehaviour
         meshFilter.mesh = _mesh;
     }
 
-    /// <summary>
-    /// Generates triangle indices for a grid mesh.
-    /// </summary>
     private int[] GenerateTriangles(int longitudeSegments, int latitudeSegments)
     {
         int[] triangles = new int[latitudeSegments * longitudeSegments * 6];
@@ -319,21 +300,18 @@ public class GridMesh : MonoBehaviour
             {
                 int current = lat * (longitudeSegments + 1) + lon;
                 int next = current + longitudeSegments + 1;
+                triangles[triIndex++] = current + 1;
+                triangles[triIndex++] = next;
                 triangles[triIndex++] = current;
-                triangles[triIndex++] = next;
-                triangles[triIndex++] = current + 1;
-                triangles[triIndex++] = current + 1;
-                triangles[triIndex++] = next;
                 triangles[triIndex++] = next + 1;
+                triangles[triIndex++] = next;
+                triangles[triIndex++] = current + 1;
             }
         }
         return triangles;
     }
 
-    /// <summary>
-    /// Calculates Z-values for each mesh vertex based on image depth.
-    /// </summary>
-    private float[] CalculateZValues()
+    private float[] CalculateZValuesFor360()
     {
         float[] zValuesArray = new float[(_meshWidth + 1) * (_meshHeight + 1)];
         float meshScale = _meshWidth > _meshHeight ? (float)_meshWidth / _texWidth : (float)_meshHeight / _texHeight;
@@ -343,27 +321,20 @@ public class GridMesh : MonoBehaviour
         {
             for (int i = 0; i < _meshWidth; i++)
             {
-                int matrixColumn, matrixRow;
-                if (_fileLoader.Is360)
+                int matrixColumn = Mathf.Min((int)(i / meshScale), _originalWidth - 1);
+                int matrixRow = Mathf.Min((int)(j / meshScale), _originalHeight - 1);
+                float depth = _filteredDepth[matrixRow, matrixColumn];
+                if (depth <= 0f)
                 {
-                    matrixColumn = Mathf.Min((int)(i / meshScale), _texWidth);
-                    matrixRow = Mathf.Min((int)(j / meshScale), _texHeight);
-                    zValuesArray[j * (_meshWidth + 1) + i] = _zValues[matrixRow, matrixColumn] - _zValueMin + OFFSET;
+                    depth = _baseDepth;
                 }
-                else
-                {
-                    matrixColumn = Mathf.Min((int)(_uMatrix[j, i] * _texWidth), _texWidth);
-                    matrixRow = Mathf.Min((int)(_vMatrix[j, i] * _texHeight), _texHeight);
-                    zValuesArray[j * (_meshWidth + 1) + i] = _zValues[matrixRow, matrixColumn] - _zValueMin + OFFSET;
-                }
+                zValuesArray[j * (_meshWidth + 1) + i] = Mathf.Max(depth, _baseDepth) + OFFSET;
             }
-            // For right edge: duplicate neighbor or wrap for 360Åã images
             int rightIndex = j * (_meshWidth + 1) + _meshWidth;
             zValuesArray[rightIndex] = _fileLoader.Is360
                 ? zValuesArray[j * (_meshWidth + 1)]
                 : zValuesArray[rightIndex - 1];
         }
-        // Copy bottom row from the row above
         for (int i = (_meshWidth + 1) * _meshHeight; i < (_meshWidth + 1) * (_meshHeight + 1); i++)
         {
             zValuesArray[i] = zValuesArray[i - (_meshWidth + 1)];
@@ -378,10 +349,10 @@ public class GridMesh : MonoBehaviour
 
     void Update()
     {
-        bool passUpdateZpositions = true;
-
         if (!_isMeshCreated)
+        {
             return;
+        }
 
         _meshTransform = transform;
 
@@ -390,57 +361,76 @@ public class GridMesh : MonoBehaviour
             HandleObjectManipulation();
         }
 
-        // Recreate mesh if center Z has changed
-        if (_currentCenterZ != _previousCenterZ)
+        bool needsRefresh = false;
+
+        if (!_fileLoader.Is360 && _currentCenterZ != _previousCenterZ)
         {
             _previousCenterZ = _currentCenterZ;
-            CreateMesh(_meshWidth, _meshHeight, _currentCenterZ);
-            _zValuesMesh = CalculateZValues();
-            _isMeshCreated = true;
-            passUpdateZpositions = false;
+            CreatePerspectiveMesh(_meshWidth, _meshHeight, _currentCenterZ);
+            needsRefresh = true;
         }
 
-        // Update mesh only when transformations occur
         if (_magnificationZ != _prevMagnificationZ || _powerFactor != _prevPowerFactor || _linearity != _prevLinearity)
-            passUpdateZpositions = false;
+        {
+            needsRefresh = true;
+        }
 
-        if (passUpdateZpositions)
+        if (!needsRefresh)
+        {
             return;
+        }
 
         _prevMagnificationZ = _magnificationZ;
         _prevPowerFactor = _powerFactor;
         _prevLinearity = _linearity;
 
-        float magOffset = _magnificationZ * OFFSET;
-        UpdateVertexZPositions(i =>
+        if (_fileLoader.Is360)
         {
-            float zValue = _zValuesMesh[i] + OFFSET;
-            if (_linearity == "Log")
+            UpdateVertexZPositions(i =>
             {
-                zValue = Mathf.Log(1 + Mathf.Pow(zValue, _powerFactor));
-            }
-            return _magnificationZ * zValue - magOffset;
-        });
+                float depth = _zValuesMesh[i];
+                if (_linearity == "Log")
+                {
+                    float relative = Mathf.Max(depth - _baseDepth + OFFSET, 0.001f);
+                    depth = _baseDepth + Mathf.Log(1f + Mathf.Pow(relative, _powerFactor));
+                }
+                float scaledDepth = _baseDepth + _magnificationZ * (depth - _baseDepth + OFFSET);
+                return Mathf.Max(scaledDepth, _baseDepth + OFFSET);
+            });
+        }
+        else
+        {
+            UpdateVertexZPositions(i =>
+            {
+                float depth = _zValuesMesh[i];
+                if (_linearity == "Log")
+                {
+                    float relative = Mathf.Max(depth - _baseDepth + OFFSET, 0.001f);
+                    depth = _baseDepth + Mathf.Log(1f + Mathf.Pow(relative, _powerFactor));
+                }
+                float scaledDepth = _baseDepth + _magnificationZ * (depth - _baseDepth);
+                return Mathf.Max(scaledDepth, _baseDepth + 0.001f);
+            });
+        }
     }
 
-    /// <summary>
-    /// Updates the Z coordinate of each vertex using a provided function.
-    /// </summary>
-    public void UpdateVertexZPositions(Func<int, float> zPositionFunc)
+    public void UpdateVertexZPositions(Func<int, float> depthFunc)
     {
         if (_fileLoader.Is360)
         {
             for (int i = 0; i < _vertices.Length; i++)
             {
-                _vertices[i] = zPositionFunc(i) * _vertexPositions[i];
+                Vector3 dir = _initialVertices[i].normalized;
+                float scale = depthFunc(i);
+                _vertices[i] = dir * scale;
             }
         }
         else
         {
             for (int i = 0; i < _vertices.Length; i++)
             {
-                Vector3 vertexDirection = _vertexPositions[i].normalized;
-                _vertices[i] = _vertexPositions[i] + zPositionFunc(i) * vertexDirection;
+                float depth = depthFunc(i);
+                _vertices[i] = _rayDirections[i] * depth;
             }
         }
         _mesh.vertices = _vertices;
@@ -448,9 +438,6 @@ public class GridMesh : MonoBehaviour
         _mesh.RecalculateBounds();
     }
 
-    /// <summary>
-    /// Handles object manipulation using controller input.
-    /// </summary>
     private void HandleObjectManipulation()
     {
         float triggerR = OVRInput.Get(OVRInput.RawAxis1D.RIndexTrigger);
@@ -504,7 +491,7 @@ public class GridMesh : MonoBehaviour
 
         if (OVRInput.GetDown(OVRInput.Button.Start))
         {
-            _meshTransform.position = _initialPosition + new Vector3(0, 0, _currentCenterZ + SETBACK);
+            _meshTransform.position = _initialPosition + new Vector3(0, 0, ComputeViewTranslation());
             _meshTransform.localScale = Vector3.one;
             _magnificationZ = 1f;
             _powerFactor = 1f;
@@ -512,13 +499,219 @@ public class GridMesh : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Selects the linearity mode ("Linear" or "Log") based on button input.
-    /// </summary>
     private string SelectLinearity()
     {
         if (OVRInput.GetDown(OVRInput.RawButton.B)) _linearity = "Linear";
         if (OVRInput.GetDown(OVRInput.RawButton.A)) _linearity = "Log";
         return _linearity;
+    }
+
+    private float[,] PreprocessDepth(float[,] source, Color32[] colors)
+    {
+        if (source == null || colors == null || colors.Length == 0)
+        {
+            return source;
+        }
+
+        int height = source.GetLength(0);
+        int width = source.GetLength(1);
+
+        float[,] working = (float[,])source.Clone();
+        float[,] spikeReduced = ReduceDepthSpikes(working, colors, width, height);
+        float[,] smoothed = ApplyEdgeAwareSmooth(spikeReduced, colors, width, height);
+        return smoothed;
+    }
+
+    private float[,] ReduceDepthSpikes(float[,] depth, Color32[] colors, int width, int height)
+    {
+        float[,] result = (float[,])depth.Clone();
+        float[] window = new float[9];
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                int idx = 0;
+                for (int ky = -1; ky <= 1; ky++)
+                {
+                    for (int kx = -1; kx <= 1; kx++)
+                    {
+                        int nx = ClampIndex(x + kx, width);
+                        int ny = ClampIndex(y + ky, height);
+                        window[idx++] = depth[ny, nx];
+                    }
+                }
+
+                Array.Sort(window);
+                float median = window[window.Length / 2];
+                float center = depth[y, x];
+                if (center <= 0f)
+                {
+                    continue;
+                }
+
+                int stableCount = 0;
+                float colorDiffAccum = 0f;
+                int neighborCount = 0;
+                Color32 centerColor = colors[y * width + x];
+
+                for (int ky = -1; ky <= 1; ky++)
+                {
+                    for (int kx = -1; kx <= 1; kx++)
+                    {
+                        if (kx == 0 && ky == 0)
+                        {
+                            continue;
+                        }
+                        int nx = ClampIndex(x + kx, width);
+                        int ny = ClampIndex(y + ky, height);
+                        float neighbor = depth[ny, nx];
+                        if (Mathf.Abs(neighbor - median) < DEPTH_STABLE_TOLERANCE)
+                        {
+                            stableCount++;
+                        }
+                        Color32 neighborColor = colors[ny * width + nx];
+                        colorDiffAccum += ComputeColorDistance(centerColor, neighborColor);
+                        neighborCount++;
+                    }
+                }
+
+                float avgColorDiff = neighborCount > 0 ? colorDiffAccum / neighborCount : 0f;
+                if (Mathf.Abs(center - median) > DEPTH_SPIKE_THRESHOLD &&
+                    stableCount >= 5 &&
+                    avgColorDiff < COLOR_EDGE_THRESHOLD)
+                {
+                    result[y, x] = median;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private float[,] ApplyEdgeAwareSmooth(float[,] depth, Color32[] colors, int width, int height)
+    {
+        float[,] result = new float[height, width];
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                float center = depth[y, x];
+                if (center <= 0f)
+                {
+                    result[y, x] = center;
+                    continue;
+                }
+
+                float accum = 0f;
+                float weightSum = 0f;
+                Color32 centerColor = colors[y * width + x];
+
+                for (int ky = -1; ky <= 1; ky++)
+                {
+                    for (int kx = -1; kx <= 1; kx++)
+                    {
+                        int nx = ClampIndex(x + kx, width);
+                        int ny = ClampIndex(y + ky, height);
+                        float neighbor = depth[ny, nx];
+                        float spatial = SpatialKernel[ky + 1, kx + 1];
+                        float depthDiff = neighbor - center;
+                        float depthWeight = Mathf.Exp(-(depthDiff * depthDiff) / (2f * BILATERAL_DEPTH_SIGMA * BILATERAL_DEPTH_SIGMA));
+                        float colorDiff = ComputeColorDistance(centerColor, colors[ny * width + nx]);
+                        float colorWeight = Mathf.Exp(-(colorDiff * colorDiff) / (2f * BILATERAL_COLOR_SIGMA * BILATERAL_COLOR_SIGMA));
+                        float weight = spatial * depthWeight * colorWeight;
+                        accum += neighbor * weight;
+                        weightSum += weight;
+                    }
+                }
+
+                float smoothed = weightSum > 0f ? accum / weightSum : center;
+                result[y, x] = Mathf.Lerp(center, smoothed, SMOOTH_BLEND);
+            }
+        }
+
+        return result;
+    }
+
+    private (float min, float max) FindDepthExtents(float[,] depth)
+    {
+        float min = float.MaxValue;
+        float max = float.MinValue;
+        int height = depth.GetLength(0);
+        int width = depth.GetLength(1);
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                float value = depth[y, x];
+                if (value <= 0f)
+                {
+                    continue;
+                }
+                if (value < min)
+                {
+                    min = value;
+                }
+                if (value > max)
+                {
+                    max = value;
+                }
+            }
+        }
+
+        if (min == float.MaxValue)
+        {
+            min = MIN_DEPTH_CLAMP;
+        }
+        if (max == float.MinValue)
+        {
+            max = min;
+        }
+
+        return (min, max);
+    }
+
+    private float SampleDepth(float pixelX, float pixelY)
+    {
+        int ix = Mathf.Clamp(Mathf.RoundToInt(pixelX), 0, _originalWidth - 1);
+        int iy = Mathf.Clamp(Mathf.RoundToInt(pixelY), 0, _originalHeight - 1);
+        float depth = _filteredDepth[iy, ix];
+        if (depth <= 0f)
+        {
+            depth = _baseDepth;
+        }
+        return Mathf.Max(depth, _baseDepth);
+    }
+
+    private float ComputeVerticalFov(float centerOffset)
+    {
+        float t = Mathf.InverseLerp(CENTER_Z_MIN, CENTER_Z_MAX, Mathf.Clamp(centerOffset, CENTER_Z_MIN, CENTER_Z_MAX));
+        return Mathf.Lerp(MIN_FOV_Y, MAX_FOV_Y, t);
+    }
+
+    private float ComputeViewTranslation()
+    {
+        float clamped = Mathf.Clamp(_currentCenterZ, CENTER_Z_MIN, CENTER_Z_MAX);
+        float offset = Mathf.Max(_baseDepth + clamped + SETBACK, 0.1f);
+        return offset + UI_CLEARANCE;
+    }
+
+    private int ClampIndex(int value, int size)
+    {
+        if (value < 0)
+            return 0;
+        if (value >= size)
+            return size - 1;
+        return value;
+    }
+
+    private float ComputeColorDistance(Color32 a, Color32 b)
+    {
+        float dr = (a.r - b.r) / 255f;
+        float dg = (a.g - b.g) / 255f;
+        float db = (a.b - b.b) / 255f;
+        return Mathf.Sqrt(dr * dr + dg * dg + db * db);
     }
 }
