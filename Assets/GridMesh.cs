@@ -234,6 +234,7 @@ public class GridMesh : MonoBehaviour
         }
 
         int[] triangles = GenerateTriangles(longitudeSegments, latitudeSegments);
+        InvertTriangleWinding(triangles);
         _mesh.vertices = _vertices;
         _mesh.normals = normals;
         _mesh.uv = uvs;
@@ -300,15 +301,25 @@ public class GridMesh : MonoBehaviour
             {
                 int current = lat * (longitudeSegments + 1) + lon;
                 int next = current + longitudeSegments + 1;
-                triangles[triIndex++] = current + 1;
-                triangles[triIndex++] = next;
                 triangles[triIndex++] = current;
-                triangles[triIndex++] = next + 1;
                 triangles[triIndex++] = next;
                 triangles[triIndex++] = current + 1;
+                triangles[triIndex++] = current + 1;
+                triangles[triIndex++] = next;
+                triangles[triIndex++] = next + 1;
             }
         }
         return triangles;
+    }
+
+    private void InvertTriangleWinding(int[] triangles)
+    {
+        for (int i = 0; i < triangles.Length; i += 3)
+        {
+            int tmp = triangles[i];
+            triangles[i] = triangles[i + 1];
+            triangles[i + 1] = tmp;
+        }
     }
 
     private float[] CalculateZValuesFor360()
