@@ -95,6 +95,8 @@ public class GridMesh : MonoBehaviour
     private const float SMOOTH_BLEND = 0.30f;
     private const float BILATERAL_DEPTH_SIGMA = 0.35f;
     private const float BILATERAL_COLOR_SIGMA = 0.08f;
+    private const float SCALE_MIN = 0.05f;
+    private const float SCALE_MAX = 10.0f;
 
     private static readonly float[,] SpatialKernel = new float[3, 3]
     {
@@ -104,6 +106,7 @@ public class GridMesh : MonoBehaviour
     };
 
     private float _baseDepth;
+    private float _targetNearDistance;
 
     public void OnImageCreatedHandler(Color32[] leftPixels)
     {
@@ -172,6 +175,8 @@ public class GridMesh : MonoBehaviour
             Vector3 tfPos = _meshTransform.position;
             _meshTransform.position = tfPos + new Vector3(0, 0, ComputeViewTranslation());
         }
+
+        _targetNearDistance = _meshTransform.position.z + _meshTransform.localScale.x * _baseDepth;
 
         _isMeshCreated = true;
         _fileLoader.IsReadyToLoad = true;
@@ -483,22 +488,53 @@ public class GridMesh : MonoBehaviour
         _prevControllerPosX = localPos.x;
         _prevControllerPosY = localPos.y;
         _prevControllerPosZ = localPos.z;
+        bool translationAdjusted = false;
         if (triggerL > TRIGGER_THRESHOLD)
         {
             meshPos.x += diffX;
             meshPos.y += diffY;
             meshPos.z += diffZ;
+            translationAdjusted = true;
         }
 
         Vector2 stickPositionL = OVRInput.Get(OVRInput.RawAxis2D.LThumbstick);
-        meshPos.x += stickPositionL.x * STICK_MOVE_FACTOR;
-        meshPos.z += stickPositionL.y * STICK_MOVE_FACTOR;
+        if (!Mathf.Approximately(stickPositionL.x, 0f) || !Mathf.Approximately(stickPositionL.y, 0f))
+        {
+            meshPos.x += stickPositionL.x * STICK_MOVE_FACTOR;
+            meshPos.z += stickPositionL.y * STICK_MOVE_FACTOR;
+            translationAdjusted = true;
+        }
+
+        if (!_fileLoader.Is360 && translationAdjusted)
+        {
+            _targetNearDistance = meshPos.z + _meshTransform.localScale.x * _baseDepth;
+        }
 
         Vector2 stickPositionR = OVRInput.Get(OVRInput.RawAxis2D.RThumbstick);
         float scaleDelta = stickPositionR.x * STICK_MOVE_FACTOR;
-        _meshTransform.localScale += new Vector3(scaleDelta, scaleDelta, scaleDelta);
-        meshPos.z += scaleDelta * _currentCenterZ;
+        if (!Mathf.Approximately(scaleDelta, 0f))
+        {
+            float currentScale = _meshTransform.localScale.x;
+            float targetScale = Mathf.Clamp(currentScale + scaleDelta, SCALE_MIN, SCALE_MAX);
+            if (!Mathf.Approximately(targetScale, currentScale))
+            {
+                _meshTransform.localScale = new Vector3(targetScale, targetScale, targetScale);
+                if (_fileLoader.Is360)
+                {
+                    meshPos.z += (targetScale - currentScale) * _currentCenterZ;
+                }
+                else if (_baseDepth > 0f)
+                {
+                    meshPos.z = _targetNearDistance - targetScale * _baseDepth;
+                }
+            }
+        }
         _meshTransform.position = meshPos;
+
+        if (!_fileLoader.Is360 && _baseDepth > 0f)
+        {
+            _targetNearDistance = _meshTransform.position.z + _meshTransform.localScale.x * _baseDepth;
+        }
 
         if (OVRInput.GetDown(OVRInput.Button.Start))
         {
@@ -507,6 +543,10 @@ public class GridMesh : MonoBehaviour
             _magnificationZ = 1f;
             _powerFactor = 1f;
             _linearity = "Linear";
+            if (!_fileLoader.Is360 && _baseDepth > 0f)
+            {
+                _targetNearDistance = _meshTransform.position.z + _meshTransform.localScale.x * _baseDepth;
+            }
         }
     }
 
