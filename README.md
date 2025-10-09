@@ -19,7 +19,7 @@ Language / 言語: [English](#english) | [日本語](#日本語)
 
 3D 画像用の PNG ファイルの作成に必要な Python スクリプトの実行には、別途 Depth Pro [[URL](https://github.com/apple/ml-depth-pro)] [[Checkpoints URL](https://huggingface.co/apple/DepthPro)] のインストールが必要です。
 
-### [ファイルのダウンロード](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.1.3)
+### [ファイルのダウンロード](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.1.4)
 
 ### 設定方法及び使用方法の概要
 1. Depth Pro を公式ページに記載の方法でインストール。
@@ -78,7 +78,7 @@ Using the included Python script, this application creates a PNG image file that
 
 A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-pro)] [[Checkpoints URL](https://huggingface.co/apple/DepthPro)] is required to run the Python script necessary for creating PNG files for 3D images.
 
-### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.1.3)
+### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.1.4)
 
 ### Outline of Setup and Usage
 1. Install Depth Pro following the instructions on the official page.
