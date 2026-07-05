@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
+using System;
 using System.Collections;
 using System.IO;
+using System.Text;
 using SimpleFileBrowser;
 using UnityEngine.Events;
 
@@ -9,37 +11,19 @@ public class ImageCreatedEvent : UnityEvent<Color32[]> { }
 
 public class FileLoader : MonoBehaviour
 {
-    // Target mesh size (in pixels, total)
-    // 目標メッシュサイズ（ピクセル単位、全体）
+    private const string DepthMetadataKeyword = "LookingGlassGoDepthMetadata";
     private const int TargetMesh = 250000;
     private const int MeshDiff = 2000;
 
-    // Reference to the previously displayed image object
-    // 前回表示された画像オブジェクトの参照
-    private GameObject _previousImageObject;
-
-    // Internal field for readiness to load
-    // 読み込み準備の内部フィールド
     [SerializeField]
     private bool _isReadyToLoad = true;
-
-    /// <summary>
-    /// Public property to check or set if loading is ready.
-    /// 読み込み準備完了かどうかを取得または設定するパブリックプロパティ
-    /// </summary>
     public bool IsReadyToLoad
     {
         get { return _isReadyToLoad; }
         set { _isReadyToLoad = value; }
     }
 
-    // Internal field for readiness to control
-    // コントロール準備の内部フィールド
     private bool _isReadyToControl;
-    /// <summary>
-    /// Public property to check if control is ready.
-    /// コントロール準備完了かどうかを取得するパブリックプロパティ
-    /// </summary>
     public bool IsReadyToControl
     {
         get { return _isReadyToControl; }
@@ -47,10 +31,6 @@ public class FileLoader : MonoBehaviour
 
     [SerializeField]
     private int _originalWidth = 0;
-    /// <summary>
-    /// Public property for the original width after separation.
-    /// 分割後の元画像の幅（左側）のパブリックプロパティ
-    /// </summary>
     public int OriginalWidth
     {
         get { return _originalWidth; }
@@ -58,29 +38,27 @@ public class FileLoader : MonoBehaviour
 
     [SerializeField]
     private int _originalHeight = 0;
-    /// <summary>
-    /// Public property for the original height after separation.
-    /// 分割後の元画像の高さのパブリックプロパティ
-    /// </summary>
     public int OriginalHeight
     {
         get { return _originalHeight; }
     }
 
-    // Right side depth data (UInt32 stored in RGBA32) as float array
-    // 右側の深度情報（RGBA32に格納されたUInt32）をfloat配列で保持
     private float[] _pixelZData;
+    public float[] PixelZData
+    {
+        get { return _pixelZData; }
+    }
 
-    // Internal field for the pixel Z matrix
-    // 深度情報の2次元配列（pixel Z matrix）の内部フィールド
     private float[,] _pixelZMatrix;
-    /// <summary>
-    /// Public property for the depth data matrix [y, x].
-    /// 深度情報の2次元配列（[y,x]）のパブリックプロパティ
-    /// </summary>
     public float[,] PixelZMatrix
     {
         get { return _pixelZMatrix; }
+    }
+
+    private Texture2D _depthTexture;
+    public Texture2D DepthTexture
+    {
+        get { return _depthTexture; }
     }
 
     private float _pixelZMax;
@@ -97,10 +75,6 @@ public class FileLoader : MonoBehaviour
 
     [SerializeField]
     private int _meshX;
-    /// <summary>
-    /// Public property for the mesh width selected from the dropdown.
-    /// ドロップダウンから選択されたメッシュの横数のパブリックプロパティ
-    /// </summary>
     public int MeshX
     {
         get { return _meshX; }
@@ -108,10 +82,6 @@ public class FileLoader : MonoBehaviour
 
     [SerializeField]
     private int _meshY;
-    /// <summary>
-    /// Public property for the mesh height selected from the dropdown.
-    /// ドロップダウンから選択されたメッシュの縦数のパブリックプロパティ
-    /// </summary>
     public int MeshY
     {
         get { return _meshY; }
@@ -119,19 +89,35 @@ public class FileLoader : MonoBehaviour
 
     [SerializeField]
     private bool _is360;
-    /// <summary>
-    /// Public property indicating if the image is a 360 image.
-    /// 360画像かどうかを示すパブリックプロパティ（trueなら360画像）
-    /// </summary>
     public bool Is360
     {
         get { return _is360; }
     }
 
-    /// <summary>
-    /// UnityEvent that is triggered when the image is created.
-    /// Imageが作成された際に発生するUnityEvent
-    /// </summary>
+    private bool _hasSourceVerticalFov;
+    public bool HasSourceVerticalFov
+    {
+        get { return _hasSourceVerticalFov; }
+    }
+
+    private float _sourceVerticalFov;
+    public float SourceVerticalFov
+    {
+        get { return _sourceVerticalFov; }
+    }
+
+    private float _sourceHorizontalFov;
+    public float SourceHorizontalFov
+    {
+        get { return _sourceHorizontalFov; }
+    }
+
+    private float _sourceFocalLengthPx;
+    public float SourceFocalLengthPx
+    {
+        get { return _sourceFocalLengthPx; }
+    }
+
     [SerializeField]
     public ImageCreatedEvent OnImageCreated;
 
@@ -142,6 +128,15 @@ public class FileLoader : MonoBehaviour
         FileBrowser.SetExcludedExtensions(".lnk", ".tmp", ".zip", ".rar", ".exe");
         _isReadyToLoad = false;
         StartCoroutine(ShowLoadDialogCoroutine());
+    }
+
+    private void OnDestroy()
+    {
+        if (_depthTexture != null)
+        {
+            Destroy(_depthTexture);
+            _depthTexture = null;
+        }
     }
 
     void Update()
@@ -177,8 +172,14 @@ public class FileLoader : MonoBehaviour
 
         byte[] pngData = File.ReadAllBytes(filePath);
         Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-        texture.LoadImage(pngData);
-        StartCoroutine(SplitImage(texture));
+        if (!texture.LoadImage(pngData))
+        {
+            Destroy(texture);
+            _isReadyToLoad = true;
+            return;
+        }
+
+        StartCoroutine(SplitImage(texture, pngData, filePath));
     }
 
     void OnFileNotSelected()
@@ -186,14 +187,7 @@ public class FileLoader : MonoBehaviour
         _isReadyToLoad = true;
     }
 
-    /// <summary>
-    /// Coroutine that splits the image:
-    /// creates a texture from the left half and stores depth information from the right half.
-    /// 画像を分割し、左側をテクスチャ化し、右側から深度情報を取得するコルーチン
-    /// </summary>
-    /// <param name="originalTexture">The original Texture2D loaded from file.</param>
-    /// <returns>IEnumerator</returns>
-    private IEnumerator SplitImage(Texture2D originalTexture)
+    private IEnumerator SplitImage(Texture2D originalTexture, byte[] pngData, string filePath)
     {
         if (originalTexture == null)
         {
@@ -202,47 +196,47 @@ public class FileLoader : MonoBehaviour
 
         _originalWidth = originalTexture.width / 2;
         _originalHeight = originalTexture.height;
-
-        Texture2D leftTexture = new Texture2D(_originalWidth, _originalHeight, originalTexture.format, false);
-        Texture2D rightTexture = new Texture2D(originalTexture.width - _originalWidth, _originalHeight, originalTexture.format, false, true);
+        LoadDepthMetadata(pngData, filePath);
 
         Color32[] originalPixels = originalTexture.GetPixels32();
         Color32[] leftPixels = new Color32[_originalWidth * _originalHeight];
-        Color32[] rightPixels = new Color32[(originalTexture.width - _originalWidth) * _originalHeight];
+
+        _pixelZData = new float[_originalWidth * _originalHeight];
+        _pixelZMatrix = new float[_originalHeight, _originalWidth];
+        _pixelZMax = float.MinValue;
+        _pixelZMin = float.MaxValue;
 
         for (int y = 0; y < _originalHeight; y++)
         {
+            int sourceRow = y * originalTexture.width;
+            int targetRow = y * _originalWidth;
+            Array.Copy(originalPixels, sourceRow, leftPixels, targetRow, _originalWidth);
+
+            int depthRow = sourceRow + _originalWidth;
             for (int x = 0; x < _originalWidth; x++)
             {
-                leftPixels[y * _originalWidth + x] = originalPixels[y * originalTexture.width + x];
+                float z = DecodeDepth(originalPixels[depthRow + x]);
+                int targetIndex = targetRow + x;
+                _pixelZData[targetIndex] = z;
+                _pixelZMatrix[y, x] = z;
+                if (z > _pixelZMax)
+                {
+                    _pixelZMax = z;
+                }
+                if (z < _pixelZMin)
+                {
+                    _pixelZMin = z;
+                }
             }
         }
 
-        for (int y = 0; y < _originalHeight; y++)
+        if (_pixelZData.Length == 0)
         {
-            for (int x = _originalWidth; x < originalTexture.width; x++)
-            {
-                rightPixels[y * (originalTexture.width - _originalWidth) + (x - _originalWidth)] = originalPixels[y * originalTexture.width + x];
-            }
+            _pixelZMax = 0f;
+            _pixelZMin = 0f;
         }
 
-        _pixelZData = new float[rightPixels.Length];
-        for (int i = 0; i < _pixelZData.Length; i++)
-        {
-            _pixelZData[i] = (rightPixels[i].a * 16777216f + rightPixels[i].b * 65536f + rightPixels[i].g * 256f + rightPixels[i].r) / 10000f;
-        }
-
-        _pixelZMatrix = new float[_originalHeight, _originalWidth];
-        for (int j = 0; j < _originalHeight; j++)
-        {
-            for (int i = 0; i < _originalWidth; i++)
-            {
-                _pixelZMatrix[j, i] = _pixelZData[j * _originalWidth + i];
-            }
-        }
-
-        _pixelZMax = Mathf.Max(_pixelZData);
-        _pixelZMin = Mathf.Min(_pixelZData);
+        CreateDepthTexture(_pixelZData, _originalWidth, _originalHeight);
 
         var bestMesh = FindBestMeshSize(TargetMesh, MeshDiff);
         _meshX = bestMesh.meshX;
@@ -250,18 +244,216 @@ public class FileLoader : MonoBehaviour
 
         OnImageCreated?.Invoke(leftPixels);
         Destroy(originalTexture);
-        Destroy(rightTexture);
 
         yield return null;
     }
 
-    /// <summary>
-    /// Finds the best mesh size that closely matches the image's aspect ratio.
-    /// 画像のアスペクト比に最も近いメッシュの横・縦数を見つけるメソッド
-    /// </summary>
-    /// <param name="totalMeshes">Total number of meshes</param>
-    /// <param name="meshDiff">Allowed difference in mesh count</param>
-    /// <returns>Tuple containing meshX and meshY</returns>
+    private static float DecodeDepth(Color32 pixel)
+    {
+        uint rawDepth = (uint)pixel.r
+            | ((uint)pixel.g << 8)
+            | ((uint)pixel.b << 16)
+            | ((uint)pixel.a << 24);
+        return rawDepth / 10000f;
+    }
+
+    private void CreateDepthTexture(float[] depthData, int width, int height)
+    {
+        if (_depthTexture != null)
+        {
+            Destroy(_depthTexture);
+            _depthTexture = null;
+        }
+
+        _depthTexture = new Texture2D(width, height, TextureFormat.RFloat, false, true)
+        {
+            filterMode = FilterMode.Point,
+            wrapMode = TextureWrapMode.Clamp
+        };
+        _depthTexture.SetPixelData(depthData, 0);
+        _depthTexture.Apply(false, false);
+    }
+
+    private void LoadDepthMetadata(byte[] pngData, string imagePath)
+    {
+        _hasSourceVerticalFov = false;
+        _sourceVerticalFov = 0f;
+        _sourceHorizontalFov = 0f;
+        _sourceFocalLengthPx = 0f;
+
+        string json = ReadPngITxt(pngData, DepthMetadataKeyword);
+        if (string.IsNullOrEmpty(json))
+        {
+            return;
+        }
+
+        try
+        {
+            DepthMetadata metadata = JsonUtility.FromJson<DepthMetadata>(json);
+            if (metadata == null)
+            {
+                return;
+            }
+
+            _sourceFocalLengthPx = metadata.focallength_px;
+            _sourceVerticalFov = metadata.vertical_fov_deg;
+            _sourceHorizontalFov = metadata.horizontal_fov_deg;
+
+            if (_sourceVerticalFov <= 0f && _sourceFocalLengthPx > 0f)
+            {
+                int height = metadata.height > 0 ? metadata.height : _originalHeight;
+                _sourceVerticalFov = CalculateFovDegrees(height, _sourceFocalLengthPx);
+            }
+            if (_sourceHorizontalFov <= 0f && _sourceFocalLengthPx > 0f)
+            {
+                int width = metadata.width > 0 ? metadata.width : _originalWidth;
+                _sourceHorizontalFov = CalculateFovDegrees(width, _sourceFocalLengthPx);
+            }
+
+            _hasSourceVerticalFov = _sourceVerticalFov > 0f;
+            if (_hasSourceVerticalFov)
+            {
+                Debug.Log(
+                    $"Loaded RGBDE metadata: focalLengthPx={_sourceFocalLengthPx:F3}, "
+                    + $"verticalFov={_sourceVerticalFov:F3}, horizontalFov={_sourceHorizontalFov:F3}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"Failed to read embedded depth metadata: {imagePath}\n{ex.Message}");
+        }
+    }
+
+    private static string ReadPngITxt(byte[] pngData, string keyword)
+    {
+        if (!HasPngSignature(pngData))
+        {
+            return null;
+        }
+
+        int offset = 8;
+        while (offset + 12 <= pngData.Length)
+        {
+            uint length = ReadUInt32BigEndian(pngData, offset);
+            if (length > int.MaxValue)
+            {
+                return null;
+            }
+
+            long chunkEnd = (long)offset + 12L + length;
+            if (chunkEnd > pngData.Length)
+            {
+                return null;
+            }
+
+            string chunkType = Encoding.ASCII.GetString(pngData, offset + 4, 4);
+            int dataOffset = offset + 8;
+            int dataLength = (int)length;
+
+            if (chunkType == "iTXt")
+            {
+                string text = TryReadITxtChunk(pngData, dataOffset, dataLength, keyword);
+                if (text != null)
+                {
+                    return text;
+                }
+            }
+            else if (chunkType == "IEND")
+            {
+                break;
+            }
+
+            offset = (int)chunkEnd;
+        }
+
+        return null;
+    }
+
+    private static bool HasPngSignature(byte[] data)
+    {
+        return data != null
+            && data.Length >= 8
+            && data[0] == 0x89
+            && data[1] == 0x50
+            && data[2] == 0x4E
+            && data[3] == 0x47
+            && data[4] == 0x0D
+            && data[5] == 0x0A
+            && data[6] == 0x1A
+            && data[7] == 0x0A;
+    }
+
+    private static uint ReadUInt32BigEndian(byte[] data, int offset)
+    {
+        return ((uint)data[offset] << 24)
+            | ((uint)data[offset + 1] << 16)
+            | ((uint)data[offset + 2] << 8)
+            | data[offset + 3];
+    }
+
+    private static string TryReadITxtChunk(byte[] data, int dataOffset, int dataLength, string keyword)
+    {
+        int end = dataOffset + dataLength;
+        int keywordEnd = FindNullByte(data, dataOffset, end);
+        if (keywordEnd < 0)
+        {
+            return null;
+        }
+
+        string chunkKeyword = Encoding.ASCII.GetString(data, dataOffset, keywordEnd - dataOffset);
+        if (!string.Equals(chunkKeyword, keyword, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        int cursor = keywordEnd + 1;
+        if (cursor + 2 > end)
+        {
+            return null;
+        }
+
+        byte compressionFlag = data[cursor++];
+        byte compressionMethod = data[cursor++];
+        if (compressionFlag != 0 || compressionMethod != 0)
+        {
+            return null;
+        }
+
+        int languageEnd = FindNullByte(data, cursor, end);
+        if (languageEnd < 0)
+        {
+            return null;
+        }
+
+        cursor = languageEnd + 1;
+        int translatedKeywordEnd = FindNullByte(data, cursor, end);
+        if (translatedKeywordEnd < 0)
+        {
+            return null;
+        }
+
+        cursor = translatedKeywordEnd + 1;
+        return Encoding.UTF8.GetString(data, cursor, end - cursor);
+    }
+
+    private static int FindNullByte(byte[] data, int start, int end)
+    {
+        for (int i = start; i < end; i++)
+        {
+            if (data[i] == 0)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static float CalculateFovDegrees(float sizePx, float focalLengthPx)
+    {
+        return Mathf.Atan(sizePx / (2f * focalLengthPx)) * Mathf.Rad2Deg * 2f;
+    }
+
     private (int meshX, int meshY) FindBestMeshSize(int totalMeshes, int meshDiff)
     {
         double aspectRatio = (double)_originalWidth / _originalHeight;
@@ -273,16 +465,22 @@ public class FileLoader : MonoBehaviour
 
         for (int t = minMesh; t <= maxMesh; t++)
         {
-            if (t <= 0) continue;
-            int approxX = Mathf.RoundToInt((float)System.Math.Sqrt(t * aspectRatio));
-            if (approxX <= 0) continue;
+            if (t <= 0)
+            {
+                continue;
+            }
+            int approxX = Mathf.RoundToInt((float)Math.Sqrt(t * aspectRatio));
+            if (approxX <= 0)
+            {
+                continue;
+            }
             int approxY = Mathf.RoundToInt(t / (float)approxX);
             int product = approxX * approxY;
             if (product < minMesh || product > maxMesh)
             {
                 continue;
             }
-            double currentRatioError = System.Math.Abs((double)approxX / approxY - aspectRatio);
+            double currentRatioError = Math.Abs((double)approxX / approxY - aspectRatio);
             if (currentRatioError < bestRatioError)
             {
                 bestRatioError = currentRatioError;
@@ -291,5 +489,15 @@ public class FileLoader : MonoBehaviour
             }
         }
         return (bestMeshX, bestMeshY);
+    }
+
+    [Serializable]
+    private class DepthMetadata
+    {
+        public int width;
+        public int height;
+        public float focallength_px;
+        public float vertical_fov_deg;
+        public float horizontal_fov_deg;
     }
 }

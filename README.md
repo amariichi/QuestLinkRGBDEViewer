@@ -12,6 +12,7 @@ Language / 言語: [English](#english) | [日本語](#日本語)
 付属の Python スクリプトを使用して、Apple が公開した Depth Pro で推定したデプス情報を追加したPNG画像データを作成します。
 そのPNG画像を読み込み、Meta Quest 2 などで 3D 画像を観るための Meta Quest Link 用アプリです。
 
+- **v1.2.0** : 通常RGBDE画像の深度変形をGPUシェーダーへ移し、Depth Pro の推定焦点距離をPNGメタデータに埋め込んでピンホール投影に利用
 - **v1.1.2** : モデル拡大・縮小時に視点との距離が不自然に変化しないよう前方アンカーを導入
 - **v1.1.1** : 360度画像のメッシュ向きを修正し、ドキュメントを更新
 - **v1.1.0** : 球面パッチを押し込む方式から、推定デプスで各ピクセルへ視線投影したメッシュ再構築と深度ノイズ対策を導入
@@ -19,7 +20,7 @@ Language / 言語: [English](#english) | [日本語](#日本語)
 
 3D 画像用の PNG ファイルの作成に必要な Python スクリプトの実行には、別途 Depth Pro [[URL](https://github.com/apple/ml-depth-pro)] [[Checkpoints URL](https://huggingface.co/apple/DepthPro)] のインストールが必要です。
 
-### [ファイルのダウンロード](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.1.4)
+### [ファイルのダウンロード](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.2.0)
 
 ### 設定方法及び使用方法の概要
 1. Depth Pro を公式ページに記載の方法でインストール。
@@ -72,13 +73,14 @@ The following is an automatic translation by ChatGPT and is a provisional transl
 ### Overview
 Using the included Python script, this application creates a PNG image file that incorporates depth information estimated by Depth Pro, which is provided by Apple. By loading that PNG image, you can view it in 3D on devices like Meta Quest 2 via a Meta Quest Link application.
 
+- **v1.2.0**: Move depth displacement for regular RGBDE images to a GPU shader and embed Depth Pro estimated focal length in PNG metadata for pinhole projection.
 - **v1.1.2**: Added a forward anchor so scaling the model keeps the perceived viewing distance stable.
 - **v1.1.1**: Fixed triangle winding for 360° panoramas and refreshed documentation.
 - **v1.1.0**: Replaced the spherical push mesh with per-pixel ray reconstruction using estimated depth and added depth noise mitigation.
 
 A separate installation of Depth Pro  [[URL](https://github.com/apple/ml-depth-pro)] [[Checkpoints URL](https://huggingface.co/apple/DepthPro)] is required to run the Python script necessary for creating PNG files for 3D images.
 
-### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.1.4)
+### [Download Files](https://github.com/amariichi/QuestLinkRGBDEViewer/releases/tag/v1.2.0)
 
 ### Outline of Setup and Usage
 1. Install Depth Pro following the instructions on the official page.

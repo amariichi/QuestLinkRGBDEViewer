@@ -8,6 +8,26 @@ public class GridMesh : MonoBehaviour
 {
     [SerializeField] private FileLoader _fileLoader;
     [SerializeField] private Material _meshMaterial;
+    [SerializeField] private bool _useGpuDepthDisplacement = true;
+    [SerializeField] private Shader _depthDisplacementShader;
+
+    private MeshRenderer _meshRenderer;
+    private Material _runtimeMeshMaterial;
+    private Shader _defaultMeshShader;
+    private Texture _currentMainTexture;
+    private Texture2D _filteredDepthTexture;
+    private bool _usingGpuDepthDisplacement;
+
+    private static readonly int MainTexId = Shader.PropertyToID("_MainTex");
+    private static readonly int DepthTexId = Shader.PropertyToID("_DepthTex");
+    private static readonly int UseGpuDepthDisplacementId = Shader.PropertyToID("_UseGpuDepthDisplacement");
+    private static readonly int DepthUVScaleId = Shader.PropertyToID("_DepthUVScale");
+    private static readonly int BaseDepthId = Shader.PropertyToID("_BaseDepth");
+    private static readonly int MagnificationZId = Shader.PropertyToID("_MagnificationZ");
+    private static readonly int PowerFactorId = Shader.PropertyToID("_PowerFactor");
+    private static readonly int LinearityModeId = Shader.PropertyToID("_LinearityMode");
+    private static readonly int TanHalfVerticalId = Shader.PropertyToID("_TanHalfVertical");
+    private static readonly int TanHalfHorizontalId = Shader.PropertyToID("_TanHalfHorizontal");
 
     [SerializeField] private int _originalWidth;
     [SerializeField] private int _originalHeight;
@@ -87,6 +107,8 @@ public class GridMesh : MonoBehaviour
 
     private const float MIN_FOV_Y = 30f;
     private const float MAX_FOV_Y = 110f;
+    private const float MIN_SOURCE_FOV_Y = 5f;
+    private const float MAX_SOURCE_FOV_Y = 120f;
     private const float MIN_DEPTH_CLAMP = 0.15f;
 
     private const float DEPTH_SPIKE_THRESHOLD = 0.45f;
@@ -108,6 +130,32 @@ public class GridMesh : MonoBehaviour
     private float _baseDepth;
     private float _targetNearDistance;
 
+    private void Awake()
+    {
+        _meshRenderer = GetComponent<MeshRenderer>();
+    }
+
+    private void OnDestroy()
+    {
+        if (_currentMainTexture != null)
+        {
+            Destroy(_currentMainTexture);
+            _currentMainTexture = null;
+        }
+
+        if (_filteredDepthTexture != null)
+        {
+            Destroy(_filteredDepthTexture);
+            _filteredDepthTexture = null;
+        }
+
+        if (_runtimeMeshMaterial != null)
+        {
+            Destroy(_runtimeMeshMaterial);
+            _runtimeMeshMaterial = null;
+        }
+    }
+
     public void OnImageCreatedHandler(Color32[] leftPixels)
     {
         _prevMagnificationZ = 0.0f;
@@ -121,6 +169,7 @@ public class GridMesh : MonoBehaviour
         _meshHeight = _fileLoader.MeshY;
         _zValues = _fileLoader.PixelZMatrix;
         _filteredDepth = PreprocessDepth(_zValues, leftPixels);
+        CreateFilteredDepthTexture();
         var extents = FindDepthExtents(_filteredDepth);
         _zValueMin = Mathf.Max(extents.min, MIN_DEPTH_CLAMP);
         _zValueMax = Mathf.Max(_zValueMin + 0.001f, extents.max);
@@ -146,8 +195,15 @@ public class GridMesh : MonoBehaviour
         newTexture.SetPixels32(0, 0, _originalWidth, _originalHeight, leftPixels);
         newTexture.Apply();
 
-        Destroy(_meshMaterial.mainTexture);
         AssignTextureToMaterial(newTexture, _meshMaterial);
+        _usingGpuDepthDisplacement = !_fileLoader.Is360
+            && _useGpuDepthDisplacement
+            && _filteredDepthTexture != null
+            && EnsureGpuDepthMaterial();
+        if (!_usingGpuDepthDisplacement)
+        {
+            DisableGpuDepthMaterial();
+        }
 
         _meshTransform = transform;
         Vector3 pos = Vector3.zero;
@@ -184,14 +240,209 @@ public class GridMesh : MonoBehaviour
 
     private void AssignTextureToMaterial(Texture2D texture, Material material)
     {
-        if (material == null || texture == null)
+        if (texture == null)
             return;
-        material.mainTexture = texture;
+
+        Material targetMaterial = GetRuntimeMeshMaterial(material);
+        if (targetMaterial == null)
+            return;
+
+        if (_currentMainTexture != null && _currentMainTexture != texture)
+        {
+            Destroy(_currentMainTexture);
+        }
+
+        _currentMainTexture = texture;
+        targetMaterial.mainTexture = texture;
+        targetMaterial.SetTexture(MainTexId, texture);
+    }
+
+    private Material GetRuntimeMeshMaterial(Material sourceMaterial = null)
+    {
+        if (_runtimeMeshMaterial != null)
+        {
+            return _runtimeMeshMaterial;
+        }
+
+        Material baseMaterial = sourceMaterial != null ? sourceMaterial : _meshMaterial;
+        if (baseMaterial == null && _meshRenderer != null)
+        {
+            baseMaterial = _meshRenderer.sharedMaterial;
+        }
+        if (baseMaterial == null)
+        {
+            return null;
+        }
+
+        _runtimeMeshMaterial = new Material(baseMaterial);
+        _defaultMeshShader = _runtimeMeshMaterial.shader;
+        if (_meshRenderer != null)
+        {
+            _meshRenderer.sharedMaterial = _runtimeMeshMaterial;
+        }
+
+        return _runtimeMeshMaterial;
+    }
+
+    private bool EnsureGpuDepthMaterial()
+    {
+        Material material = GetRuntimeMeshMaterial(_meshMaterial);
+        if (material == null)
+        {
+            return false;
+        }
+
+        Shader shader = _depthDisplacementShader;
+        if (shader == null)
+        {
+            shader = Shader.Find("QuestLinkRGBDE/DepthDisplacedUnlit");
+        }
+        if (shader == null)
+        {
+            shader = Resources.Load<Shader>("QuestLinkRGBDEDepthDisplacedUnlit");
+        }
+        if (shader == null)
+        {
+            Debug.LogWarning("Depth displacement shader was not found. Falling back to CPU mesh updates.");
+            return false;
+        }
+
+        if (material.shader != shader)
+        {
+            material.shader = shader;
+        }
+        if (_currentMainTexture != null)
+        {
+            material.mainTexture = _currentMainTexture;
+            material.SetTexture(MainTexId, _currentMainTexture);
+        }
+
+        return true;
+    }
+
+    private void DisableGpuDepthMaterial()
+    {
+        Material material = GetRuntimeMeshMaterial(_meshMaterial);
+        if (material == null)
+        {
+            return;
+        }
+
+        material.SetFloat(UseGpuDepthDisplacementId, 0f);
+        if (_defaultMeshShader != null && material.shader != _defaultMeshShader)
+        {
+            material.shader = _defaultMeshShader;
+            if (_currentMainTexture != null)
+            {
+                material.mainTexture = _currentMainTexture;
+            }
+        }
+    }
+
+    private void CreateFilteredDepthTexture()
+    {
+        if (_filteredDepthTexture != null)
+        {
+            Destroy(_filteredDepthTexture);
+            _filteredDepthTexture = null;
+        }
+
+        if (_filteredDepth == null)
+        {
+            return;
+        }
+
+        int height = _filteredDepth.GetLength(0);
+        int width = _filteredDepth.GetLength(1);
+        if (width <= 0 || height <= 0)
+        {
+            return;
+        }
+
+        float[] depthData = new float[width * height];
+        for (int y = 0; y < height; y++)
+        {
+            int row = y * width;
+            for (int x = 0; x < width; x++)
+            {
+                depthData[row + x] = _filteredDepth[y, x];
+            }
+        }
+
+        _filteredDepthTexture = new Texture2D(width, height, TextureFormat.RFloat, false, true)
+        {
+            filterMode = FilterMode.Point,
+            wrapMode = TextureWrapMode.Clamp
+        };
+        _filteredDepthTexture.SetPixelData(depthData, 0);
+        _filteredDepthTexture.Apply(false, false);
+    }
+
+    private void ApplyGpuDepthMaterialParameters()
+    {
+        if (!_usingGpuDepthDisplacement || _filteredDepthTexture == null)
+        {
+            return;
+        }
+
+        Material material = GetRuntimeMeshMaterial(_meshMaterial);
+        if (material == null)
+        {
+            return;
+        }
+
+        float fovY = ComputeVerticalFov(_currentCenterZ) * Mathf.Deg2Rad;
+        float aspect = (float)_originalWidth / _originalHeight;
+        float tanHalfVertical = Mathf.Tan(fovY * 0.5f);
+        float tanHalfHorizontal = tanHalfVertical * aspect;
+        float uScale = (float)_originalWidth / _texWidth;
+        float vScale = (float)_originalHeight / _texHeight;
+
+        material.SetFloat(UseGpuDepthDisplacementId, 1f);
+        material.SetTexture(DepthTexId, _filteredDepthTexture);
+        material.SetVector(DepthUVScaleId, new Vector4(uScale, vScale, 0f, 0f));
+        material.SetFloat(BaseDepthId, _baseDepth);
+        material.SetFloat(MagnificationZId, _magnificationZ);
+        material.SetFloat(PowerFactorId, _powerFactor);
+        material.SetFloat(LinearityModeId, _linearity == "Log" ? 1f : 0f);
+        material.SetFloat(TanHalfVerticalId, tanHalfVertical);
+        material.SetFloat(TanHalfHorizontalId, tanHalfHorizontal);
+    }
+
+    private void ApplyExpandedPerspectiveBounds()
+    {
+        if (_mesh == null)
+        {
+            return;
+        }
+
+        float aspect = (float)_originalWidth / _originalHeight;
+        float maxTanVertical = Mathf.Tan(Mathf.Max(MAX_FOV_Y, MAX_SOURCE_FOV_Y) * Mathf.Deg2Rad * 0.5f);
+        float maxTanHorizontal = maxTanVertical * aspect;
+        float linearDelta = Mathf.Max(_zValueMax - _baseDepth, 0.001f);
+        float relativeForLog = Mathf.Max(linearDelta + OFFSET, 0.001f);
+        float logDelta = relativeForLog > 1f
+            ? POW_MAX * Mathf.Log(relativeForLog)
+            : Mathf.Log(2f);
+        float maxDepth = _baseDepth + MAG_MAX * Mathf.Max(Mathf.Max(linearDelta, logDelta), 0.1f);
+        float xExtent = maxDepth * maxTanHorizontal + 1f;
+        float yExtent = maxDepth * maxTanVertical + 1f;
+
+        _mesh.bounds = new Bounds(
+            new Vector3(0f, 0f, maxDepth * 0.5f),
+            new Vector3(xExtent * 2f, yExtent * 2f, maxDepth * 2f + 1f)
+        );
     }
 
     private void CreatePerspectiveMesh(int longitudeSegments, int latitudeSegments, float centerOffset)
     {
+        if (_mesh != null)
+        {
+            Destroy(_mesh);
+        }
+
         _mesh = new Mesh();
+        _mesh.MarkDynamic();
         _mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         _mesh.name = "PerspectiveGrid";
 
@@ -230,7 +481,8 @@ public class GridMesh : MonoBehaviour
                 _pixelCoordX[index] = pixelX;
                 _pixelCoordY[index] = pixelY;
                 _zValuesMesh[index] = depth;
-                _initialVertices[index] = dir * depth;
+                float vertexDepth = _usingGpuDepthDisplacement ? _baseDepth : depth;
+                _initialVertices[index] = dir * vertexDepth;
                 _vertices[index] = _initialVertices[index];
                 normals[index] = -dir;
                 uvs[index] = new Vector2(u * uScale, (1f - meshV) * vScale);
@@ -246,14 +498,28 @@ public class GridMesh : MonoBehaviour
         _mesh.triangles = triangles;
 
         _mesh.RecalculateNormals();
-        _mesh.RecalculateBounds();
+        if (_usingGpuDepthDisplacement)
+        {
+            ApplyExpandedPerspectiveBounds();
+            ApplyGpuDepthMaterialParameters();
+        }
+        else
+        {
+            _mesh.RecalculateBounds();
+        }
         MeshFilter meshFilter = GetComponent<MeshFilter>();
         meshFilter.mesh = _mesh;
     }
 
     private void GenerateInvertedSphere(int longitudeSegments, int latitudeSegments)
     {
+        if (_mesh != null)
+        {
+            Destroy(_mesh);
+        }
+
         _mesh = new Mesh();
+        _mesh.MarkDynamic();
         _mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         _mesh.name = "InvertedSphere";
 
@@ -382,7 +648,10 @@ public class GridMesh : MonoBehaviour
         if (!_fileLoader.Is360 && _currentCenterZ != _previousCenterZ)
         {
             _previousCenterZ = _currentCenterZ;
-            CreatePerspectiveMesh(_meshWidth, _meshHeight, _currentCenterZ);
+            if (!_usingGpuDepthDisplacement)
+            {
+                CreatePerspectiveMesh(_meshWidth, _meshHeight, _currentCenterZ);
+            }
             needsRefresh = true;
         }
 
@@ -399,6 +668,12 @@ public class GridMesh : MonoBehaviour
         _prevMagnificationZ = _magnificationZ;
         _prevPowerFactor = _powerFactor;
         _prevLinearity = _linearity;
+
+        if (_usingGpuDepthDisplacement && !_fileLoader.Is360)
+        {
+            ApplyGpuDepthMaterialParameters();
+            return;
+        }
 
         if (_fileLoader.Is360)
         {
@@ -739,7 +1014,14 @@ public class GridMesh : MonoBehaviour
     private float ComputeVerticalFov(float centerOffset)
     {
         float t = Mathf.InverseLerp(CENTER_Z_MIN, CENTER_Z_MAX, Mathf.Clamp(centerOffset, CENTER_Z_MIN, CENTER_Z_MAX));
-        return Mathf.Lerp(MIN_FOV_Y, MAX_FOV_Y, t);
+        float manualFov = Mathf.Lerp(MIN_FOV_Y, MAX_FOV_Y, t);
+        if (_fileLoader != null && _fileLoader.HasSourceVerticalFov)
+        {
+            float sourceFov = Mathf.Clamp(_fileLoader.SourceVerticalFov, MIN_SOURCE_FOV_Y, MAX_SOURCE_FOV_Y);
+            return Mathf.Clamp(sourceFov + (manualFov - MIN_FOV_Y), MIN_SOURCE_FOV_Y, MAX_SOURCE_FOV_Y);
+        }
+
+        return manualFov;
     }
 
     private float ComputeViewTranslation()
