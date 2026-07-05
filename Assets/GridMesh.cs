@@ -161,6 +161,10 @@ public class GridMesh : MonoBehaviour
         _prevMagnificationZ = 0.0f;
         _prevPowerFactor = 0.0f;
         _prevLinearity = "Dummy";
+        if (_fileLoader != null && _fileLoader.HasSourceVerticalFov)
+        {
+            _currentCenterZ = CENTER_Z_MIN;
+        }
         _previousCenterZ = _currentCenterZ;
 
         _originalWidth = _fileLoader.OriginalWidth;
